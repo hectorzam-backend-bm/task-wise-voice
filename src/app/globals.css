@@ -1,88 +1,256 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
+@theme {
+  /* Colors */
+  --color-brand-50: rgb(231, 255, 228);
+  --color-brand-100: rgb(201, 255, 196);
+  --color-brand-200: rgb(152, 255, 144);
+  --color-brand-300: rgb(86, 255, 80);
+  --color-brand-400: rgb(0, 255, 0);
+  --color-brand-500: rgb(0, 230, 6);
+  --color-brand-600: rgb(0, 184, 9);
+  --color-brand-700: rgb(0, 139, 7);
+  --color-brand-800: rgb(7, 109, 13);
+  --color-brand-900: rgb(11, 92, 17);
+  --color-brand-950: rgb(0, 52, 6);
+  --color-neutral-0: rgb(3, 7, 18);
+  --color-neutral-50: rgb(17, 24, 39);
+  --color-neutral-100: rgb(31, 41, 55);
+  --color-neutral-200: rgb(55, 65, 81);
+  --color-neutral-300: rgb(75, 85, 99);
+  --color-neutral-400: rgb(107, 114, 128);
+  --color-neutral-500: rgb(156, 163, 175);
+  --color-neutral-600: rgb(209, 213, 219);
+  --color-neutral-700: rgb(229, 231, 235);
+  --color-neutral-800: rgb(243, 244, 246);
+  --color-neutral-900: rgb(249, 250, 251);
+  --color-neutral-950: rgb(255, 255, 255);
+  --color-error-50: rgb(58, 24, 47);
+  --color-error-100: rgb(69, 26, 55);
+  --color-error-200: rgb(80, 27, 63);
+  --color-error-300: rgb(96, 29, 72);
+  --color-error-400: rgb(122, 29, 90);
+  --color-error-500: rgb(167, 24, 115);
+  --color-error-600: rgb(214, 64, 159);
+  --color-error-700: rgb(227, 75, 169);
+  --color-error-800: rgb(246, 92, 182);
+  --color-error-900: rgb(254, 235, 247);
+  --color-warning-50: rgb(44, 33, 0);
+  --color-warning-100: rgb(53, 40, 0);
+  --color-warning-200: rgb(62, 48, 0);
+  --color-warning-300: rgb(73, 60, 0);
+  --color-warning-400: rgb(89, 74, 5);
+  --color-warning-500: rgb(112, 94, 0);
+  --color-warning-600: rgb(245, 217, 10);
+  --color-warning-700: rgb(255, 239, 92);
+  --color-warning-800: rgb(240, 192, 0);
+  --color-warning-900: rgb(255, 250, 209);
+  --color-success-50: rgb(15, 41, 30);
+  --color-success-100: rgb(17, 49, 35);
+  --color-success-200: rgb(19, 57, 41);
+  --color-success-300: rgb(22, 68, 48);
+  --color-success-400: rgb(27, 84, 58);
+  --color-success-500: rgb(35, 110, 74);
+  --color-success-600: rgb(48, 164, 108);
+  --color-success-700: rgb(60, 177, 121);
+  --color-success-800: rgb(76, 195, 138);
+  --color-success-900: rgb(229, 251, 235);
+  --color-brand-primary: rgb(152, 255, 144);
+  --color-default-font: rgb(249, 250, 251);
+  --color-subtext-color: rgb(156, 163, 175);
+  --color-neutral-border: rgb(55, 65, 81);
+  --color-black: rgb(3, 7, 18);
+  --color-default-background: rgb(3, 7, 18);
+
+  /* Semantic colors for compatibility */
+  --color-background: var(--color-default-background);
+  --color-foreground: var(--color-default-font);
+  --color-muted: var(--color-neutral-200);
+  --color-muted-foreground: var(--color-subtext-color);
+  --color-card: var(--color-neutral-50);
+  --color-card-foreground: var(--color-default-font);
+  --color-primary: var(--color-brand-primary);
+  --color-primary-foreground: var(--color-neutral-950);
+  --color-secondary: var(--color-neutral-200);
+  --color-secondary-foreground: var(--color-neutral-950);
+  --color-destructive: var(--color-error-500);
+  --color-destructive-foreground: var(--color-neutral-950);
+  --color-border: var(--color-neutral-border);
+  --color-input: var(--color-neutral-200);
+  --color-ring: var(--color-brand-primary);
+
+  /* Fonts */
+  --text-caption: 12px;
+  --text-caption--font-weight: 400;
+  --text-caption--letter-spacing: 0em;
+  --text-caption--line-height: 16px;
+  --text-caption-bold: 12px;
+  --text-caption-bold--font-weight: 500;
+  --text-caption-bold--letter-spacing: 0em;
+  --text-caption-bold--line-height: 16px;
+  --text-body: 14px;
+  --text-body--font-weight: 400;
+  --text-body--letter-spacing: 0em;
+  --text-body--line-height: 20px;
+  --text-body-bold: 14px;
+  --text-body-bold--font-weight: 500;
+  --text-body-bold--letter-spacing: 0em;
+  --text-body-bold--line-height: 20px;
+  --text-heading-3: 16px;
+  --text-heading-3--font-weight: 600;
+  --text-heading-3--letter-spacing: 0em;
+  --text-heading-3--line-height: 20px;
+  --text-heading-2: 20px;
+  --text-heading-2--font-weight: 600;
+  --text-heading-2--letter-spacing: 0em;
+  --text-heading-2--line-height: 24px;
+  --text-heading-1: 30px;
+  --text-heading-1--font-weight: 600;
+  --text-heading-1--letter-spacing: 0em;
+  --text-heading-1--line-height: 36px;
+  --text-monospace-body: 14px;
+  --text-monospace-body--font-weight: 400;
+  --text-monospace-body--letter-spacing: 0em;
+  --text-monospace-body--line-height: 20px;
+
+  /* Font families */
+  --font-caption: "IBM Plex Mono";
+  --font-caption-bold: "IBM Plex Mono";
+  --font-body: "IBM Plex Mono";
+  --font-body-bold: "IBM Plex Mono";
+  --font-heading-3: "IBM Plex Mono";
+  --font-heading-2: "IBM Plex Mono";
+  --font-heading-1: "IBM Plex Mono";
+  --font-monospace-body: monospace;
+
+  /* Box shadows */
+  --shadow-sm: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+  --shadow-default: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0px 4px 16px -2px rgba(0, 0, 0, 0.08),
+    0px 2px 4px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0px 12px 32px -4px rgba(0, 0, 0, 0.08),
+    0px 4px 8px -2px rgba(0, 0, 0, 0.08);
+  --shadow-overlay: 0px 12px 32px -4px rgba(0, 0, 0, 0.08),
+    0px 4px 8px -2px rgba(0, 0, 0, 0.08);
+
+  /* Border radiuses */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius: 0px;
+  --radius-lg: 0px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-112: 28rem;
+  --spacing-144: 36rem;
+  --spacing-192: 48rem;
+  --spacing-256: 64rem;
+  --spacing-320: 80rem;
 }
 
-@layer base {
-  :root {
-    --background: 255 27% 95%;
-    --foreground: 255 10% 10%;
-    --card: 255 27% 100%;
-    --card-foreground: 255 10% 10%;
-    --popover: 255 27% 100%;
-    --popover-foreground: 255 10% 10%;
-    --primary: 255 35% 52%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 255 27% 90%;
-    --secondary-foreground: 255 10% 10%;
-    --muted: 255 27% 90%;
-    --muted-foreground: 255 10% 45%;
-    --accent: 184 100% 34%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 255 27% 85%;
-    --input: 255 27% 88%;
-    --ring: 255 35% 52%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 255 27% 98%;
-    --sidebar-foreground: 255 10% 26%;
-    --sidebar-primary: 255 35% 52%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 255 27% 95%;
-    --sidebar-accent-foreground: 255 10% 10%;
-    --sidebar-border: 255 27% 91%;
-    --sidebar-ring: 255 35% 59%;
+/* Typography utilities */
+@utility text-caption {
+  font-size: var(--text-caption);
+  font-weight: var(--text-caption--font-weight);
+  letter-spacing: var(--text-caption--letter-spacing);
+  line-height: var(--text-caption--line-height);
+  font-family: var(--font-caption);
+}
+
+@utility text-caption-bold {
+  font-size: var(--text-caption-bold);
+  font-weight: var(--text-caption-bold--font-weight);
+  letter-spacing: var(--text-caption-bold--letter-spacing);
+  line-height: var(--text-caption-bold--line-height);
+  font-family: var(--font-caption-bold);
+}
+
+@utility text-body {
+  font-size: var(--text-body);
+  font-weight: var(--text-body--font-weight);
+  letter-spacing: var(--text-body--letter-spacing);
+  line-height: var(--text-body--line-height);
+  font-family: var(--font-body);
+}
+
+@utility text-body-bold {
+  font-size: var(--text-body-bold);
+  font-weight: var(--text-body-bold--font-weight);
+  letter-spacing: var(--text-body-bold--letter-spacing);
+  line-height: var(--text-body-bold--line-height);
+  font-family: var(--font-body-bold);
+}
+
+@utility text-heading-3 {
+  font-size: var(--text-heading-3);
+  font-weight: var(--text-heading-3--font-weight);
+  letter-spacing: var(--text-heading-3--letter-spacing);
+  line-height: var(--text-heading-3--line-height);
+  font-family: var(--font-heading-3);
+}
+
+@utility text-heading-2 {
+  font-size: var(--text-heading-2);
+  font-weight: var(--text-heading-2--font-weight);
+  letter-spacing: var(--text-heading-2--letter-spacing);
+  line-height: var(--text-heading-2--line-height);
+  font-family: var(--font-heading-2);
+}
+
+@utility text-heading-1 {
+  font-size: var(--text-heading-1);
+  font-weight: var(--text-heading-1--font-weight);
+  letter-spacing: var(--text-heading-1--letter-spacing);
+  line-height: var(--text-heading-1--line-height);
+  font-family: var(--font-heading-1);
+}
+
+@utility text-monospace-body {
+  font-size: var(--text-monospace-body);
+  font-weight: var(--text-monospace-body--font-weight);
+  letter-spacing: var(--text-monospace-body--letter-spacing);
+  line-height: var(--text-monospace-body--line-height);
+  font-family: var(--font-monospace-body);
+}
+
+/* Container */
+@utility container {
+  padding-left: 16px;
+  padding-right: 16px;
+
+  @media (width >= theme(--breakpoint-sm)) {
+    padding-left: calc((100vw + 16px - 640px) / 2);
+    padding-right: calc((100vw + 16px - 640px) / 2);
   }
-  .dark {
-    --background: 255 10% 10%;
-    --foreground: 255 27% 95%;
-    --card: 255 10% 15%;
-    --card-foreground: 255 27% 95%;
-    --popover: 255 10% 15%;
-    --popover-foreground: 255 27% 95%;
-    --primary: 255 50% 80%;
-    --primary-foreground: 255 10% 10%;
-    --secondary: 255 10% 20%;
-    --secondary-foreground: 255 27% 95%;
-    --muted: 255 10% 20%;
-    --muted-foreground: 255 27% 64%;
-    --accent: 184 80% 60%;
-    --accent-foreground: 255 10% 10%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 255 10% 25%;
-    --input: 255 10% 25%;
-    --ring: 255 50% 80%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 255 10% 15%;
-    --sidebar-foreground: 255 27% 95%;
-    --sidebar-primary: 255 50% 80%;
-    --sidebar-primary-foreground: 255 10% 10%;
-    --sidebar-accent: 255 10% 25%;
-    --sidebar-accent-foreground: 255 27% 95%;
-    --sidebar-border: 255 10% 25%;
-    --sidebar-ring: 255 50% 80%;
+
+  @media (width >= theme(--breakpoint-md)) {
+    padding-left: calc((100vw + 16px - 768px) / 2);
+    padding-right: calc((100vw + 16px - 768px) / 2);
+  }
+
+  @media (width >= theme(--breakpoint-lg)) {
+    padding-left: calc((100vw + 16px - 1024px) / 2);
+    padding-right: calc((100vw + 16px - 1024px) / 2);
+  }
+
+  @media (width >= theme(--breakpoint-xl)) {
+    padding-left: calc((100vw + 16px - 1280px) / 2);
+    padding-right: calc((100vw + 16px - 1280px) / 2);
+  }
+
+  @media (width >= theme(--breakpoint-2xl)) {
+    padding-left: calc((100vw + 16px - 1536px) / 2);
+    padding-right: calc((100vw + 16px - 1536px) / 2);
   }
 }
 
+@custom-variant mobile (@media (max-width: 767px));
+
+/* Base styles */
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
   }
 }

@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { processVoiceCommand } from '@/ai/flows/process-voice-command';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mic, Loader2, KeyRound, Save } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
-import { processVoiceCommand } from '@/ai/flows/process-voice-command';
-import * as api from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import * as api from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { KeyRound, Loader2, Mic, Save } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const initialStatusMessages = [
   "Puedes decir: 'Crea una tarea para revisar el login en el proyecto Kronos'.",
@@ -25,7 +25,7 @@ export function TaskAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [hasProcessed, setHasProcessed] = useState(false);
-  
+
   const { toast } = useToast();
 
   const handleProcessVoiceCommand = useCallback(async (text: string) => {
@@ -89,9 +89,9 @@ export function TaskAssistant() {
 
   const { transcript, isListening, startListening, stopListening, error: speechError, recognitionSupported } = useSpeechRecognition({
     onSpeechEnd: (finalTranscript) => {
-        if (finalTranscript && !hasProcessed) {
-            handleProcessVoiceCommand(finalTranscript);
-        }
+      if (finalTranscript && !hasProcessed) {
+        handleProcessVoiceCommand(finalTranscript);
+      }
     }
   });
 
@@ -108,11 +108,11 @@ export function TaskAssistant() {
       });
     }
   }, [toast]);
-  
+
   useEffect(() => {
     if (speechError) {
       setStatusMessage(`Error de voz: ${speechError}`);
-       toast({
+      toast({
         title: "Error de Reconocimiento de Voz",
         description: speechError,
         variant: "destructive",
@@ -146,18 +146,23 @@ export function TaskAssistant() {
   const MemoizedLoader = useMemo(() => <Loader2 className="mr-2 h-4 w-4 animate-spin" />, []);
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-2xl mx-auto space-y-6 bg-background text-foreground">
       <div className="text-center">
-        <h1 className="text-4xl font-bold font-headline text-primary">TaskWise Voice</h1>
-        <p className="text-muted-foreground mt-2">Tu asistente de tareas por voz. Configura tu token y habla para empezar.</p>
+        <img
+          src="logo.png"
+          alt="RADictar Logo"
+          className="mx-auto mb-4 w-24 h-24 object-contain rounded-full shadow"
+        />
+        <h1 className="text-heading-1 text-brand-primary">RADictar</h1>
+        <p className="text-body text-subtext-color mt-2">Tu asistente de tareas por voz. Configura tu token y habla para empezar.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <KeyRound className="w-6 h-6" /> Configuración de Autenticación
+          <CardTitle className="flex items-center gap-2 text-heading-2 text-default-font">
+            <KeyRound className="w-6 h-6 text-brand-primary" /> Configuración de Autenticación
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-body text-subtext-color">
             Guarda tu token de API de forma segura. Se almacenará en tu navegador.
           </CardDescription>
         </CardHeader>
@@ -167,9 +172,9 @@ export function TaskAssistant() {
             placeholder="Introduce tu token de API"
             value={inputToken}
             onChange={(e) => setInputToken(e.target.value)}
-            className="flex-grow"
+            className="grow bg-neutral-100 border-neutral-border text-default-font"
           />
-          <Button onClick={handleSaveToken}>
+          <Button onClick={handleSaveToken} className="bg-brand-primary text-neutral-border hover:bg-brand-600">
             <Save className="w-4 h-4 mr-2" /> Guardar
           </Button>
         </CardContent>
@@ -177,8 +182,8 @@ export function TaskAssistant() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Crear Nueva Tarea</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-heading-2 text-default-font">Crear Nueva Tarea</CardTitle>
+          <CardDescription className="text-body text-subtext-color">
             Presiona el micrófono y dí tu comando. Por ejemplo: "Crea una tarea para hacer el reporte mensual en el proyecto Interno".
           </CardDescription>
         </CardHeader>
@@ -187,7 +192,9 @@ export function TaskAssistant() {
             size="lg"
             className={cn(
               "w-24 h-24 rounded-full transition-all duration-300 ease-in-out shadow-lg transform hover:scale-105",
-              isListening ? "bg-red-600 hover:bg-red-700 animate-pulse" : "bg-primary hover:bg-primary/90",
+              isListening
+                ? "bg-error-600 hover:bg-error-700 animate-pulse text-neutral-950"
+                : "bg-brand-primary hover:bg-brand-600  text-neutral-border",
             )}
             onClick={handleMicClick}
             disabled={isLoading || !recognitionSupported}
@@ -197,17 +204,21 @@ export function TaskAssistant() {
           </Button>
 
           <div className="w-full space-y-2 text-center">
-             <p className="text-sm font-medium text-muted-foreground h-5">
+            <p className="text-caption text-subtext-color h-5">
               {isLoading ? 'Procesando...' : statusMessage}
             </p>
-             <Textarea
+            <Textarea
               readOnly
               value={transcript || "El comando de voz transcrito aparecerá aquí."}
-              className="text-center bg-muted/50 border-dashed"
+              className="text-center bg-neutral-100 border-neutral-border text-default-font border-dashed"
               rows={3}
             />
           </div>
-          {!recognitionSupported && <p className="text-red-500 text-sm">El reconocimiento de voz no es compatible con este navegador.</p>}
+          {!recognitionSupported && (
+            <p className="text-caption text-error-600">
+              El reconocimiento de voz no es compatible con este navegador.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -1,4 +1,7 @@
-import { config } from 'dotenv';
+import { config } from "dotenv";
 config();
 
-import '@/ai/flows/process-voice-command.ts';
+// Importar las funciones de LangChain
+import "@/ai/flows/process-voice-command.ts";
+
+console.log("LangChain AI functions loaded successfully");
