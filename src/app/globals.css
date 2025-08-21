@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
-@theme {
-  /* Colors */
+:root {
+  /* Brand (constantes en ambos modos) */
   --color-brand-50: rgb(231, 255, 228);
   --color-brand-100: rgb(201, 255, 196);
   --color-brand-200: rgb(152, 255, 144);
@@ -13,207 +13,115 @@
   --color-brand-800: rgb(7, 109, 13);
   --color-brand-900: rgb(11, 92, 17);
   --color-brand-950: rgb(0, 52, 6);
-  --color-neutral-0: rgb(3, 7, 18);
-  --color-neutral-50: rgb(17, 24, 39);
-  --color-neutral-100: rgb(31, 41, 55);
-  --color-neutral-200: rgb(55, 65, 81);
-  --color-neutral-300: rgb(75, 85, 99);
-  --color-neutral-400: rgb(107, 114, 128);
-  --color-neutral-500: rgb(156, 163, 175);
-  --color-neutral-600: rgb(209, 213, 219);
-  --color-neutral-700: rgb(229, 231, 235);
-  --color-neutral-800: rgb(243, 244, 246);
-  --color-neutral-900: rgb(249, 250, 251);
-  --color-neutral-950: rgb(255, 255, 255);
-  --color-error-50: rgb(58, 24, 47);
-  --color-error-100: rgb(69, 26, 55);
-  --color-error-200: rgb(80, 27, 63);
-  --color-error-300: rgb(96, 29, 72);
-  --color-error-400: rgb(122, 29, 90);
-  --color-error-500: rgb(167, 24, 115);
-  --color-error-600: rgb(214, 64, 159);
-  --color-error-700: rgb(227, 75, 169);
-  --color-error-800: rgb(246, 92, 182);
-  --color-error-900: rgb(254, 235, 247);
-  --color-warning-50: rgb(44, 33, 0);
-  --color-warning-100: rgb(53, 40, 0);
-  --color-warning-200: rgb(62, 48, 0);
-  --color-warning-300: rgb(73, 60, 0);
-  --color-warning-400: rgb(89, 74, 5);
-  --color-warning-500: rgb(112, 94, 0);
-  --color-warning-600: rgb(245, 217, 10);
-  --color-warning-700: rgb(255, 239, 92);
-  --color-warning-800: rgb(240, 192, 0);
-  --color-warning-900: rgb(255, 250, 209);
-  --color-success-50: rgb(15, 41, 30);
-  --color-success-100: rgb(17, 49, 35);
-  --color-success-200: rgb(19, 57, 41);
-  --color-success-300: rgb(22, 68, 48);
-  --color-success-400: rgb(27, 84, 58);
-  --color-success-500: rgb(35, 110, 74);
-  --color-success-600: rgb(48, 164, 108);
-  --color-success-700: rgb(60, 177, 121);
-  --color-success-800: rgb(76, 195, 138);
-  --color-success-900: rgb(229, 251, 235);
-  --color-brand-primary: rgb(152, 255, 144);
-  --color-default-font: rgb(249, 250, 251);
-  --color-subtext-color: rgb(156, 163, 175);
-  --color-neutral-border: rgb(55, 65, 81);
-  --color-black: rgb(3, 7, 18);
-  --color-default-background: rgb(3, 7, 18);
 
-  /* Semantic colors for compatibility */
-  --color-background: var(--color-default-background);
-  --color-foreground: var(--color-default-font);
-  --color-muted: var(--color-neutral-200);
-  --color-muted-foreground: var(--color-subtext-color);
-  --color-card: var(--color-neutral-50);
-  --color-card-foreground: var(--color-default-font);
+  /* Primario adaptativo */
+  --color-brand-primary: rgb(0, 184, 9);
+
+  /* Light neutrals */
+  --color-background: rgb(255, 255, 255);
+  --color-foreground: rgb(17, 24, 39);
+  --color-subtext-color: rgb(75, 85, 99);
+  --color-border: rgb(209, 213, 219);
+  --color-card: rgb(249, 250, 251);
+
+  /* Semantic */
   --color-primary: var(--color-brand-primary);
-  --color-primary-foreground: var(--color-neutral-950);
-  --color-secondary: var(--color-neutral-200);
-  --color-secondary-foreground: var(--color-neutral-950);
-  --color-destructive: var(--color-error-500);
-  --color-destructive-foreground: var(--color-neutral-950);
-  --color-border: var(--color-neutral-border);
-  --color-input: var(--color-neutral-200);
+  --color-primary-foreground: white;
+  --color-secondary: var(--color-border);
+  --color-secondary-foreground: var(--color-foreground);
+  --color-destructive: rgb(167, 24, 115);
+  --color-destructive-foreground: white;
+  --color-input: rgb(243, 244, 246);
   --color-ring: var(--color-brand-primary);
-
-  /* Fonts */
-  --text-caption: 12px;
-  --text-caption--font-weight: 400;
-  --text-caption--letter-spacing: 0em;
-  --text-caption--line-height: 16px;
-  --text-caption-bold: 12px;
-  --text-caption-bold--font-weight: 500;
-  --text-caption-bold--letter-spacing: 0em;
-  --text-caption-bold--line-height: 16px;
-  --text-body: 14px;
-  --text-body--font-weight: 400;
-  --text-body--letter-spacing: 0em;
-  --text-body--line-height: 20px;
-  --text-body-bold: 14px;
-  --text-body-bold--font-weight: 500;
-  --text-body-bold--letter-spacing: 0em;
-  --text-body-bold--line-height: 20px;
-  --text-heading-3: 16px;
-  --text-heading-3--font-weight: 600;
-  --text-heading-3--letter-spacing: 0em;
-  --text-heading-3--line-height: 20px;
-  --text-heading-2: 20px;
-  --text-heading-2--font-weight: 600;
-  --text-heading-2--letter-spacing: 0em;
-  --text-heading-2--line-height: 24px;
-  --text-heading-1: 30px;
-  --text-heading-1--font-weight: 600;
-  --text-heading-1--letter-spacing: 0em;
-  --text-heading-1--line-height: 36px;
-  --text-monospace-body: 14px;
-  --text-monospace-body--font-weight: 400;
-  --text-monospace-body--letter-spacing: 0em;
-  --text-monospace-body--line-height: 20px;
-
-  /* Font families */
-  --font-caption: "IBM Plex Mono";
-  --font-caption-bold: "IBM Plex Mono";
-  --font-body: "IBM Plex Mono";
-  --font-body-bold: "IBM Plex Mono";
-  --font-heading-3: "IBM Plex Mono";
-  --font-heading-2: "IBM Plex Mono";
-  --font-heading-1: "IBM Plex Mono";
-  --font-monospace-body: monospace;
-
-  /* Box shadows */
-  --shadow-sm: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
-  --shadow-default: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0px 4px 16px -2px rgba(0, 0, 0, 0.08),
-    0px 2px 4px -1px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0px 12px 32px -4px rgba(0, 0, 0, 0.08),
-    0px 4px 8px -2px rgba(0, 0, 0, 0.08);
-  --shadow-overlay: 0px 12px 32px -4px rgba(0, 0, 0, 0.08),
-    0px 4px 8px -2px rgba(0, 0, 0, 0.08);
-
-  /* Border radiuses */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius: 0px;
-  --radius-lg: 0px;
-  --radius-full: 9999px;
-
-  /* Spacing */
-  --spacing-112: 28rem;
-  --spacing-144: 36rem;
-  --spacing-192: 48rem;
-  --spacing-256: 64rem;
-  --spacing-320: 80rem;
 }
 
+.dark {
+  /* Neutrals adaptados */
+  --color-background: rgb(3, 7, 18);
+  --color-foreground: rgb(249, 250, 251);
+  --color-subtext-color: rgb(156, 163, 175);
+  --color-border: rgb(55, 65, 81);
+  --color-card: rgb(31, 41, 55);
+
+  /* Primario adaptativo */
+  --color-brand-primary: rgb(152, 255, 144);
+
+  /* Semantic */
+  --color-primary: var(--color-brand-primary);
+  --color-primary-foreground: black;
+  --color-destructive: rgb(239, 68, 68);
+  --color-destructive-foreground: white;
+  --color-input: rgb(31, 41, 55);
+
+  ::placeholder {
+  color: var(--color-subtext-color);
+  opacity: 1; /* evita que se vea demasiado deslavado */
+}
+
+}
+
+/* ============================= */
 /* Typography utilities */
+/* ============================= */
 @utility text-caption {
-  font-size: var(--text-caption);
-  font-weight: var(--text-caption--font-weight);
-  letter-spacing: var(--text-caption--letter-spacing);
-  line-height: var(--text-caption--line-height);
-  font-family: var(--font-caption);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  font-family: "IBM Plex Mono", monospace;
 }
 
 @utility text-caption-bold {
-  font-size: var(--text-caption-bold);
-  font-weight: var(--text-caption-bold--font-weight);
-  letter-spacing: var(--text-caption-bold--letter-spacing);
-  line-height: var(--text-caption-bold--line-height);
-  font-family: var(--font-caption-bold);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  font-family: "IBM Plex Mono", monospace;
 }
 
 @utility text-body {
-  font-size: var(--text-body);
-  font-weight: var(--text-body--font-weight);
-  letter-spacing: var(--text-body--letter-spacing);
-  line-height: var(--text-body--line-height);
-  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  font-family: "IBM Plex Mono", monospace;
 }
 
 @utility text-body-bold {
-  font-size: var(--text-body-bold);
-  font-weight: var(--text-body-bold--font-weight);
-  letter-spacing: var(--text-body-bold--letter-spacing);
-  line-height: var(--text-body-bold--line-height);
-  font-family: var(--font-body-bold);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  font-family: "IBM Plex Mono", monospace;
 }
 
 @utility text-heading-3 {
-  font-size: var(--text-heading-3);
-  font-weight: var(--text-heading-3--font-weight);
-  letter-spacing: var(--text-heading-3--letter-spacing);
-  line-height: var(--text-heading-3--line-height);
-  font-family: var(--font-heading-3);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  font-family: "IBM Plex Mono", monospace;
 }
 
 @utility text-heading-2 {
-  font-size: var(--text-heading-2);
-  font-weight: var(--text-heading-2--font-weight);
-  letter-spacing: var(--text-heading-2--letter-spacing);
-  line-height: var(--text-heading-2--line-height);
-  font-family: var(--font-heading-2);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 24px;
+  font-family: "IBM Plex Mono", monospace;
 }
 
 @utility text-heading-1 {
-  font-size: var(--text-heading-1);
-  font-weight: var(--text-heading-1--font-weight);
-  letter-spacing: var(--text-heading-1--letter-spacing);
-  line-height: var(--text-heading-1--line-height);
-  font-family: var(--font-heading-1);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 36px;
+  font-family: "IBM Plex Mono", monospace;
 }
 
 @utility text-monospace-body {
-  font-size: var(--text-monospace-body);
-  font-weight: var(--text-monospace-body--font-weight);
-  letter-spacing: var(--text-monospace-body--letter-spacing);
-  line-height: var(--text-monospace-body--line-height);
-  font-family: var(--font-monospace-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  font-family: monospace;
 }
 
+/* ============================= */
 /* Container */
+/* ============================= */
 @utility container {
   padding-left: 16px;
   padding-right: 16px;
@@ -244,13 +152,81 @@
   }
 }
 
+/* ============================= */
+/* Variants & Base */
+/* ============================= */
 @custom-variant mobile (@media (max-width: 767px));
 
-/* Base styles */
 @layer base {
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-body);
+    font-family: "IBM Plex Mono", monospace;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+}
+
+/* Additional utility classes */
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-primary-foreground {
+  color: var(--color-primary-foreground);
+}
+
+.text-destructive {
+  color: var(--color-destructive);
+}
+
+.text-destructive-foreground {
+  color: var(--color-destructive-foreground);
+}
+
+.text-subtext-color {
+  color: var(--color-subtext-color);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-primary\/90 {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, transparent);
+}
+
+.bg-destructive {
+  background-color: var(--color-destructive);
+}
+
+.bg-destructive\/90 {
+  background-color: color-mix(in srgb, var(--color-destructive) 90%, transparent);
+}
+
+.bg-input {
+  background-color: var(--color-input);
+}
+
+.bg-card {
+  background-color: var(--color-card);
+}
+
+.border-border {
+  border-color: var(--color-border);
+}
+
+.placeholder\:text-subtext-color::placeholder {
+  color: var(--color-subtext-color);
+}
+
+.dark\:shadow-white\/10 {
+  box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06);
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, transparent);
+}
+
+.hover\:bg-destructive\/90:hover {
+  background-color: color-mix(in srgb, var(--color-destructive) 90%, transparent);
 }

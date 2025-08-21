@@ -13,10 +13,7 @@ import { KeyRound, Loader2, Mic, Save } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const initialStatusMessages = [
-  "Puedes decir: 'Crea una tarea para revisar el login en el proyecto Kronos'.",
-  "Intenta con: 'Busca el proyecto TaskWise'.",
   "Di un comando para empezar.",
-  "¿En qué puedo ayudarte hoy?",
 ];
 
 export function TaskAssistant() {
@@ -151,16 +148,16 @@ export function TaskAssistant() {
         <img
           src="logo.png"
           alt="RADictar Logo"
-          className="mx-auto mb-4 w-24 h-24 object-contain rounded-full shadow"
+          className="mx-auto mb-4 w-24 h-24 object-contain rounded-full shadow-lg dark:shadow-white/10"
         />
-        <h1 className="text-heading-1 text-brand-primary">RADictar</h1>
+        <h1 className="text-heading-1 text-primary">RADictar</h1>
         <p className="text-body text-subtext-color mt-2">Tu asistente de tareas por voz. Configura tu token y habla para empezar.</p>
       </div>
 
-      <Card>
+      <Card className='bg-card'>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-heading-2 text-default-font">
-            <KeyRound className="w-6 h-6 text-brand-primary" /> Configuración de Autenticación
+          <CardTitle className="flex items-center gap-2 text-heading-2 text-foreground">
+            <KeyRound className="w-6 h-6 text-primary" /> Configuración de Autenticación
           </CardTitle>
           <CardDescription className="text-body text-subtext-color">
             Guarda tu token de API de forma segura. Se almacenará en tu navegador.
@@ -172,19 +169,19 @@ export function TaskAssistant() {
             placeholder="Introduce tu token de API"
             value={inputToken}
             onChange={(e) => setInputToken(e.target.value)}
-            className="grow bg-neutral-100 border-neutral-border text-default-font"
+            className="grow bg-input border-border text-foreground"
           />
-          <Button onClick={handleSaveToken} className="bg-brand-primary text-neutral-border hover:bg-brand-600">
+          <Button onClick={handleSaveToken} className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Save className="w-4 h-4 mr-2" /> Guardar
           </Button>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className='bg-card'>
         <CardHeader>
-          <CardTitle className="text-heading-2 text-default-font">Crear Nueva Tarea</CardTitle>
+          <CardTitle className="text-heading-2 text-foreground">Crear Nueva Tarea</CardTitle>
           <CardDescription className="text-body text-subtext-color">
-            Presiona el micrófono y dí tu comando. Por ejemplo: "Crea una tarea para hacer el reporte mensual en el proyecto Interno".
+            Presiona el micrófono y dí tu comando. Intenta con: 'Crea una tarea en el Proyecto Alpha, [nombre de la tarea] en el modulo [nombre del modulo] de la fase [nombre de la fase] y asignala a [nombre del usuario]'.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">
@@ -193,8 +190,8 @@ export function TaskAssistant() {
             className={cn(
               "w-24 h-24 rounded-full transition-all duration-300 ease-in-out shadow-lg transform hover:scale-105",
               isListening
-                ? "bg-error-600 hover:bg-error-700 animate-pulse text-neutral-950"
-                : "bg-brand-primary hover:bg-brand-600  text-neutral-border",
+                ? "bg-destructive hover:bg-destructive/90 animate-pulse text-destructive-foreground"
+                : "bg-primary hover:bg-primary/90 text-primary-foreground",
             )}
             onClick={handleMicClick}
             disabled={isLoading || !recognitionSupported}
@@ -210,12 +207,12 @@ export function TaskAssistant() {
             <Textarea
               readOnly
               value={transcript || "El comando de voz transcrito aparecerá aquí."}
-              className="text-center bg-neutral-100 border-neutral-border text-default-font border-dashed"
+              className="w-full p-4 rounded-md bg-card text-foreground border border-border placeholder:text-subtext-color"
               rows={3}
             />
           </div>
           {!recognitionSupported && (
-            <p className="text-caption text-error-600">
+            <p className="text-caption text-destructive">
               El reconocimiento de voz no es compatible con este navegador.
             </p>
           )}
