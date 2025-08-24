@@ -43,15 +43,33 @@ export async function processVoiceCommand(
 
 You will receive the transcribed text of a voice command, and you need to determine which tool to use and what arguments to pass to it.
 
-The primary flow is to create a task. To do this, you need to extract the project name, module name, phase name, user name, and the title of the task from the voice command.
+The primary flow is to create a task. To do this, you need to extract information from the voice command:
+- 'projectName' (required): The name of the project
+- 'title' (required): The name/description of the task
+- 'moduleName' (optional): The module name, if specified
+- 'phaseName' (optional): The phase name, if specified  
+- 'userName' (optional): The user name to assign the task to, if specified
 
-If the command is to create a task, the tool should be 'createActivity'. The arguments should include 'projectName', 'moduleName', 'phaseName', 'userName', and 'title'.
+If module, phase, or user are not mentioned in the voice command, simply omit them from the args. The system will automatically use the first available option.
+
+If the command is to create a task, the tool should be 'createActivity'. The arguments should include 'projectName' and 'title' as required, and optionally 'moduleName', 'phaseName', and 'userName' if mentioned.
 
 If the command is to find something (like a project), the tool should be 'findProject' and the argument should be 'projectName'.
 
 Always respond with a JSON object that contains the 'tool' and 'args' fields.
 
-Example for creating a task:
+Examples for creating a task:
+
+Minimal example (only project and task title):
+{{
+  "tool": "createActivity",
+  "args": {{
+    "projectName": "Kronos",
+    "title": "Revisar el login"
+  }}
+}}
+
+Complete example (with module, phase, and user):
 {{
   "tool": "createActivity",
   "args": {{

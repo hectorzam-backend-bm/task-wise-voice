@@ -261,7 +261,7 @@ export function TaskAssistant() {
         <CardHeader>
           <CardTitle className="text-heading-2 text-foreground">Crear Nueva Tarea</CardTitle>
           <CardDescription className="text-body text-subtext-color">
-            Presiona el micrófono y dí tu comando. Intenta con: 'Crea una tarea en el Proyecto Alpha, [nombre de la tarea] en el modulo [nombre del modulo] de la fase [nombre de la fase] y asignala a [nombre del usuario]'.
+            Presiona el micrófono y dí tu comando. Puedes decir: 'Crear tarea [nombre] en proyecto [proyecto]' o especificar módulo, fase y usuario: 'Crear tarea [nombre] en proyecto [proyecto] módulo [módulo] fase [fase] para [usuario]'.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">
