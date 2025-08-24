@@ -95,30 +95,76 @@ export function TaskAssistant() {
   useEffect(() => {
     const randomStatus = initialStatusMessages[Math.floor(Math.random() * initialStatusMessages.length)];
     setStatusMessage(randomStatus);
-    const storedToken = localStorage.getItem("apiToken");
-    if (storedToken) {
-      setToken(storedToken);
-      setInputToken(storedToken);
-      toast({
-        title: "Token cargado",
-        description: "Tu token de API se ha cargado desde el almacenamiento local.",
-      });
+
+    // Only access localStorage on the client side
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem("apiToken");
+      if (storedToken) {
+        setToken(storedToken);
+        setInputToken(storedToken);
+        toast({
+          title: "Token cargado",
+          description: "Tu token de API se ha cargado desde el almacenamiento local.",
+        });
+      }
     }
   }, [toast]);
 
   useEffect(() => {
     if (speechError) {
-      setStatusMessage(`Error de voz: ${speechError}`);
+      let errorMessage = "";
+      let errorTitle = "";
+
+      switch (speechError) {
+        case 'network':
+          errorMessage = "Error de conexión a internet. Verifica tu conexión y vuelve a intentar.";
+          errorTitle = "Error de Red";
+          break;
+        case 'not-allowed':
+          errorMessage = "Permisos de micrófono denegados. Permite el acceso al micrófono en tu navegador.";
+          errorTitle = "Permisos Denegados";
+          break;
+        case 'no-speech':
+          errorMessage = "No se detectó ningún audio. Asegúrate de hablar cerca del micrófono.";
+          errorTitle = "No se Detectó Voz";
+          break;
+        case 'audio-capture':
+          errorMessage = "Error al capturar audio. Verifica que tu micrófono esté funcionando.";
+          errorTitle = "Error de Captura de Audio";
+          break;
+        case 'service-not-allowed':
+          errorMessage = "Servicio de reconocimiento de voz no permitido. Verifica la configuración del navegador.";
+          errorTitle = "Servicio No Permitido";
+          break;
+        case 'language-not-supported':
+          errorMessage = "Idioma no soportado. Cambia la configuración de idioma.";
+          errorTitle = "Idioma No Soportado";
+          break;
+        default:
+          errorMessage = `Error desconocido: ${speechError}. Intenta recargar la página.`;
+          errorTitle = "Error de Reconocimiento de Voz";
+      }
+
+      setStatusMessage(`❌ ${errorTitle}: ${errorMessage}`);
+      console.error('Speech recognition error details:', {
+        error: speechError,
+        timestamp: new Date().toISOString(),
+        userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server-side',
+        isHttps: typeof window !== 'undefined' ? window.location.protocol === 'https:' : false
+      });
+
       toast({
-        title: "Error de Reconocimiento de Voz",
-        description: speechError,
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive",
       });
     }
   }, [speechError, toast]);
 
   const handleSaveToken = () => {
-    localStorage.setItem("apiToken", inputToken);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("apiToken", inputToken);
+    }
     setToken(inputToken);
     setStatusMessage("Token guardado de forma segura.");
     toast({
@@ -127,16 +173,50 @@ export function TaskAssistant() {
     });
   };
 
-  const handleMicClick = () => {
+  const handleMicClick = async () => {
     if (isListening) {
       stopListening();
       if (transcript) {
         handleProcessVoiceCommand(transcript);
       }
     } else {
-      setHasProcessed(false);
-      startListening();
-      setStatusMessage("Escuchando...");
+      // Verificar permisos de micrófono antes de iniciar
+      try {
+        if (navigator.permissions) {
+          const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+          console.log('Estado de permisos del micrófono:', permissionStatus.state);
+
+          if (permissionStatus.state === 'denied') {
+            toast({
+              title: "Permisos Denegados",
+              description: "El acceso al micrófono está bloqueado. Permite el acceso en la configuración del navegador.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+
+        // Verificar protocolo HTTPS
+        if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+          toast({
+            title: "Protocolo No Seguro",
+            description: "El reconocimiento de voz requiere HTTPS. Asegúrate de estar en una conexión segura.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setHasProcessed(false);
+        startListening();
+        setStatusMessage("Escuchando...");
+
+      } catch (error) {
+        console.error('Error al verificar permisos:', error);
+        // Continuar sin verificación de permisos si la API no está disponible
+        setHasProcessed(false);
+        startListening();
+        setStatusMessage("Escuchando...");
+      }
     }
   };
 
@@ -210,11 +290,50 @@ export function TaskAssistant() {
               className="w-full p-4 rounded-md bg-card text-foreground border border-border placeholder:text-subtext-color"
               rows={3}
             />
+            {speechError && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const diagnosticInfo = {
+                    error: speechError,
+                    timestamp: new Date().toISOString(),
+                    userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server-side',
+                    isHttps: typeof window !== 'undefined' ? window.location.protocol === 'https:' : false,
+                    speechRecognitionAvailable: typeof window !== 'undefined' ? typeof window.SpeechRecognition !== 'undefined' : false,
+                    webkitSpeechRecognitionAvailable: typeof window !== 'undefined' ? typeof window.webkitSpeechRecognition !== 'undefined' : false,
+                    permissions: typeof window !== 'undefined' && navigator.permissions ? 'API disponible' : 'API no disponible'
+                  };
+                  console.log('Información de diagnóstico completa:', diagnosticInfo);
+                  if (typeof window !== 'undefined') {
+                    navigator.clipboard?.writeText(JSON.stringify(diagnosticInfo, null, 2));
+                  }
+                  toast({
+                    title: "Información copiada",
+                    description: "La información de diagnóstico se ha copiado al portapapeles y mostrado en la consola.",
+                  });
+                }}
+                className="text-xs"
+              >
+                📋 Copiar diagnóstico
+              </Button>
+            )}
           </div>
           {!recognitionSupported && (
-            <p className="text-caption text-destructive">
-              El reconocimiento de voz no es compatible con este navegador.
-            </p>
+            <div className="text-center space-y-2">
+              <p className="text-caption text-destructive">
+                El reconocimiento de voz no es compatible con este navegador.
+              </p>
+              <details className="text-xs text-subtext-color">
+                <summary className="cursor-pointer">Información de diagnóstico</summary>
+                <div className="mt-2 p-2 bg-card rounded border text-left">
+                  <p>Navegador: {typeof window !== 'undefined' ? navigator.userAgent : 'Server-side'}</p>
+                  <p>HTTPS: {typeof window !== 'undefined' ? (window.location.protocol === 'https:' ? 'Sí' : 'No') : 'N/A'}</p>
+                  <p>SpeechRecognition: {typeof window !== 'undefined' ? (typeof window.SpeechRecognition !== 'undefined' ? 'Disponible' : 'No disponible') : 'N/A'}</p>
+                  <p>webkitSpeechRecognition: {typeof window !== 'undefined' ? (typeof window.webkitSpeechRecognition !== 'undefined' ? 'Disponible' : 'No disponible') : 'N/A'}</p>
+                </div>
+              </details>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -1,8 +1,8 @@
+import { OPENAI_API_KEY } from "@/config/env";
 import { ChatOpenAI } from "@langchain/openai";
 
-// Configuración del modelo OpenAI para LangChain
 export const chatModel = new ChatOpenAI({
-  model: "gpt-4o",
+  openAIApiKey: OPENAI_API_KEY,
+  model: "gpt-4o-mini",
   temperature: 0,
-  apiKey: process.env.OPENAI_API_KEY,
 });
