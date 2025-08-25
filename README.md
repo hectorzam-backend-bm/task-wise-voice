@@ -1,161 +1,216 @@
-# Task Wise Voice
+# TaskWise Voice
 
 Una aplicación de asistente de voz para gestión de tareas que utiliza inteligencia artificial para procesar comandos de voz y crear actividades en proyectos.
 
-## Características
+## 🚀 Características
 
-- 🎤 **Reconocimiento de Voz**: Soporte para Web Speech API y OpenAI Whisper
-- 🤖 **IA Integrada**: Procesamiento de comandos con LangChain y OpenAI
-- 🎨 **UI Moderna**: Interfaz con Tailwind CSS v4 y tema personalizable
-- 🌙 **Modo Oscuro/Claro**: Toggle de tema integrado
-- 📊 **API Real**: Integración con endpoints de TaskWise
-- 🔒 **HTTPS**: Soporte completo para desarrollo seguro
+- 🎤 **Reconocimiento de Voz**: Soporte nativo para Web Speech API del navegador
+- 🤖 **IA Integrada**: Procesamiento inteligente de comandos con Langchain (OpenAI)
+- 🎨 **UI Moderna**: Interfaz elegante con shadcn/ui y Tailwind CSS
+- 🌙 **Modo Oscuro/Claro**: Variables CSS nativas para temas personalizables
+- 📱 **Diseño Responsivo**: Componentes adaptativos con sidebar colapsible
+- 🔒 **Seguridad**: Tokens almacenados de forma segura en localStorage
+- ⚡ **Real-time**: Transcripción y procesamiento en tiempo real
+- 📊 **Mock API**: Sistema de simulación para desarrollo y testing
 
-## Configuración
+## 🛠️ Configuración
 
 ### 1. Variables de Entorno
 
-TaskWise Voice utiliza variables de entorno siguiendo las mejores prácticas de Next.js:
-
-#### Configuración Inicial
-
-1. **Copia el archivo de ejemplo**:
-
-   ```bash
-   cp .env.example .env.local
-   ```
-
-2. **Configura las variables requeridas** en `.env.local`:
+Copia el archivo de configuración base:
 
 ```bash
-# OpenAI Configuration (Required - Server-side only)
-OPENAI_API_KEY="tu_api_key_de_openai"
-
-# TaskWise API Configuration (Required - Client-side accessible)
-NEXT_PUBLIC_API_URL="https://tu-api-taskwise.com/api"
-
-# LangSmith Configuration (Optional - for development debugging)
-LANGSMITH_TRACING="true"
-LANGSMITH_API_KEY="tu_langsmith_api_key"
-LANGSMITH_PROJECT="tu_proyecto"
+cp .env.example .env.local
 ```
 
-#### Jerarquía de Archivos de Entorno
+Configura las variables requeridas en `.env.local`:
 
-Next.js carga las variables de entorno en el siguiente orden:
+```bash
+# OpenAI Configuration (Requerido)
+OPENAI_API_KEY="tu_api_key_de_openai_aqui"
 
-1. `process.env`
-2. `.env.$(NODE_ENV).local`
-3. `.env.local` (No se carga cuando `NODE_ENV` es `test`)
-4. `.env.$(NODE_ENV)`
-5. `.env`
 
-#### Tipos de Variables
+# Optional: Para desarrollo y debugging
+NODE_ENV="development"
+```
 
-- **Server-side only**: Variables sin prefijo (ej: `OPENAI_API_KEY`)
-- **Client-side**: Variables con prefijo `NEXT_PUBLIC_` (ej: `NEXT_PUBLIC_API_URL`)
-
-> ⚠️ **Importante**: Las variables `NEXT_PUBLIC_` son visibles en el navegador. Nunca pongas secretos ahí.
-
-#### Variables Requeridas
-
-| Variable              | Tipo   | Descripción                                 |
-| --------------------- | ------ | ------------------------------------------- |
-| `OPENAI_API_KEY`      | Server | API key de OpenAI para transcripción de voz |
-| `NEXT_PUBLIC_API_URL` | Client | URL de tu API de TaskWise                   |
-
-#### Variables Opcionales
-
-| Variable            | Tipo   | Descripción                        |
-| ------------------- | ------ | ---------------------------------- |
-| `LANGSMITH_TRACING` | Server | Habilita trazabilidad de LangChain |
-| `LANGSMITH_API_KEY` | Server | API key de LangSmith               |
-| `LANGSMITH_PROJECT` | Server | Nombre del proyecto en LangSmith   |
-
-### 2. Instalación
+### 2. Instalación y Ejecución
 
 ```bash
 # Instalar dependencias
 pnpm install
 
-# Ejecutar en desarrollo (con HTTPS)
+# Ejecutar en desarrollo
 pnpm dev
 
-# Ejecutar en desarrollo (HTTP)
-pnpm dev:http
+# Construir para producción
+pnpm build
+
+# Ejecutar producción
+pnpm start
 ```
 
-### 3. API Integration
+## 🎯 Uso del Asistente
 
-La aplicación está configurada para trabajar con los siguientes endpoints:
+### 1. Configuración Inicial
 
-- `GET /projects/` - Listar proyectos
-- `GET /projects/{id}/modules` - Obtener módulos de un proyecto
-- `GET /projects/{id}/phases` - Obtener fases de un proyecto
-- `GET /projects/{id}/users` - Obtener usuarios de un proyecto
+1. **Abre la aplicación** en tu navegador
+2. **Configura tu token de API** en la sección de autenticación
+3. **Permite acceso al micrófono** cuando el navegador lo solicite
 
-### 4. Uso del Asistente de Voz
+### 2. Comandos de Voz Soportados
 
-1. **Configura tu token de API** en la interfaz
-2. **Permite acceso al micrófono** cuando se solicite
-3. **Habla comandos** como:
+#### 📝 Crear Tareas
 
-#### Comandos para Crear Tareas:
+**Comando completo** (recomendado):
+```
+"Crea una tarea para hacer el reporte mensual en el proyecto Kronos módulo frontend fase desarrollo para Ana"
+```
 
-**Comando mínimo** (solo proyecto y título):
+**Comando simplificado**:
+```
+"Crear tarea revisar diseño en proyecto TaskWise"
+```
 
-- "Crear tarea revisar diseño en proyecto TaskWise"
-- "Crea una tarea llamada actualizar base de datos en el proyecto Kronos"
+**Elementos que puedes especificar**:
+- **Proyecto**: Kronos, TaskWise, Interno
+- **Módulo**: frontend, backend, mobile
+- **Fase**: desarrollo, testing, producción
+- **Usuario**: Ana, Carlos, Juan
 
-**Comando completo** (con módulo, fase y usuario):
+#### 🔍 Buscar Proyectos
 
-- "Crear tarea revisar diseño en proyecto TaskWise módulo frontend fase desarrollo para Ana"
-- "Crea una tarea llamada optimizar queries en proyecto Database módulo backend fase testing para Carlos"
+```
+"Buscar proyecto Kronos"
+"Encuentra el proyecto TaskWise"
+```
 
-**Comando parcial** (solo algunos elementos opcionales):
+### 3. Flujo de Trabajo
 
-- "Crear tarea revisar API en proyecto Mobile para Juan"
-- "Crea tarea diseñar mockups en proyecto Web módulo frontend"
+1. **Presiona el botón del micrófono** (círculo púrpura)
+2. **Habla tu comando** claramente
+3. **Observa la transcripción** en tiempo real
+4. **Revisa el resultado** del procesamiento con IA
+5. **Confirma la acción** realizada
 
-#### Comandos para Buscar Proyectos:
-
-- "Buscar proyecto Kronos"
-- "Encuentra el proyecto TaskWise"
-
-> 💡 **Tip**: Si no especificas módulo, fase o usuario, el sistema usará automáticamente la primera opción disponible en el proyecto.
-
-## Desarrollo
-
-### Scripts Disponibles
-
-- `pnpm dev` - Servidor de desarrollo con HTTPS
-- `pnpm dev:http` - Servidor de desarrollo con HTTP
-- `pnpm build` - Construir para producción
-- `pnpm start` - Ejecutar versión de producción
-- `pnpm lint` - Verificar código con ESLint
-- `pnpm typecheck` - Verificar tipos con TypeScript
+## 🏗️ Arquitectura
 
 ### Estructura del Proyecto
 
 ```
 src/
-├── ai/                    # Flujos de IA con LangChain
-├── app/                   # App Router de Next.js
-├── components/            # Componentes de UI
-├── hooks/                 # Hooks personalizados
-├── lib/                   # Utilidades y API
-│   ├── types/            # Tipos TypeScript
-│   ├── api.ts            # Cliente de API
-│   └── utils.ts          # Utilidades
-└── config/               # Configuración
+├── ai/
+│   └── flows/
+│       └── process-voice-command.ts  # Procesamiento de comandos
+├── app/
+│   ├── globals.css            # Estilos globales y variables CSS
+│   ├── layout.tsx             # Layout raíz con fuentes
+│   └── page.tsx               # Página principal
+├── components/
+│   ├── task-assistant.tsx     # Componente principal del asistente
+│   └── ui/                    # Componentes de UI (shadcn/ui)
+├── hooks/
+│   ├── use-speech-recognition.ts  # Hook para reconocimiento de voz
+│   ├── use-mobile.ts          # Hook para detección móvil
+│   └── use-toast.ts           # Sistema de notificaciones
+├── lib/
+│   ├── api.ts                 # Cliente API con funciones mock
+│   ├── types/                 # Definiciones de tipos TypeScript
+│   └── utils.ts               # Utilidades generales
+└── config/                    # Archivos de configuración
 ```
 
-## Tecnologías
+### Tecnologías Principales
 
-- **Framework**: Next.js 15
-- **Styling**: Tailwind CSS v4
-- **UI Components**: Radix UI
-- **AI**: LangChain + OpenAI
-- **Voice**: Web Speech API + Whisper
+- **Framework**: Next.js 15 con App Router
+- **IA**: Langchain  (OpenAI)
+- **UI**: shadcn/ui + Radix UI primitives
+- **Styling**: Tailwind CSS con variables CSS nativas
+- **Voice**: Web Speech API nativa del navegador
 - **Language**: TypeScript
 - **Package Manager**: pnpm
+- **Fonts**: Inter (body) + Space Grotesk (headlines)
+
+## 🎨 Diseño y Tema
+
+### Paleta de Colores
+
+- **Primario**: Púrpura profundo (#6750A4) - Profesionalismo e innovación
+- **Fondo**: Gris claro (#F2F0F7) - Legibilidad y reducción de fatiga visual
+- **Acento**: Teal (#00A3AD) - Elementos interactivos
+- **Sidebar**: Variables CSS específicas para el panel lateral
+
+### Componentes de UI
+
+- **Cards**: Componente principal para organizar información
+- **Buttons**: Estados interactivos con animaciones sutiles
+- **Input/Textarea**: Campos de entrada con estados de focus
+- **Toast**: Sistema de notificaciones integrado
+- **Sidebar**: Panel lateral colapsible con scroll personalizado
+
+## 🔧 Desarrollo
+
+### Scripts Disponibles
+
+```bash
+# Desarrollo
+pnpm dev              # Servidor de desarrollo
+pnpm build            # Construir para producción
+pnpm start            # Ejecutar build de producción
+pnpm lint             # Verificar código con ESLint
+pnpm typecheck        # Verificar tipos TypeScript
+```
+
+### API Mock Sistema
+
+El proyecto incluye un sistema completo de APIs simuladas en [`src/lib/api.ts`](src/lib/api.ts):
+
+- **Proyectos**: Kronos (ID: 101), TaskWise (ID: 102)
+- **Módulos**: frontend (ID: 201), backend (ID: 888)
+- **Fases**: desarrollo (ID: 301), testing (ID: 777)
+- **Usuarios**: Ana (ID: 401), Carlos (ID: 666)
+
+### Configuración de Desarrollo
+
+1. **Node.js**: Versión especificada en [`.nvmrc`](.nvmrc)
+2. **VS Code**: Configuración en [`.vscode/settings.json`](.vscode/settings.json)
+3. **TypeScript**: Configuración en [`tsconfig.json`](tsconfig.json)
+4. **Tailwind**: Configuración en [`postcss.config.mjs`](postcss.config.mjs)
+
+## 🚀 Despliegue
+
+### Firebase App Hosting
+
+El proyecto está configurado para despliegue en Firebase con [`apphosting.yaml`](apphosting.yaml).
+
+### Variables de Entorno en Producción
+
+Asegúrate de configurar las siguientes variables en tu plataforma de despliegue:
+
+- `OPENAI_API_KEY`: Tu clave API de OpenAI
+- `NODE_ENV`: `production`
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit tus cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abre un Pull Request
+
+## 📝 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 🆘 Soporte
+
+Si tienes problemas o preguntas:
+
+1. Revisa que tu navegador soporte Web Speech API
+2. Verifica que tienes configurado el token de OpenAI
+3. Asegúrate de permitir acceso al micrófono
+4. Consulta la consola del navegador para errores detallados
+
+---
+
+**TaskWise Voice** - Tu asistente de tareas por voz. Configuración rápida, comandos naturales, resultados inmediatos.
