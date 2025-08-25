@@ -74,7 +74,7 @@ Minimal example (only project, task title, and user):
   }}
 }}
 
-Complete example (with module, phase, and user):
+Complete example (with module, phase, user, and estimation):
 {{
   "tool": "createActivity",
   "args": {{
@@ -82,7 +82,9 @@ Complete example (with module, phase, and user):
     "moduleName": "Frontend",
     "phaseName": "Desarrollo",
     "userName": "Ana",
-    "title": "Revisar el login"
+    "title": "Revisar el login",
+    "estimatedHours": 2,
+    "estimatedMinutes": 30
   }}
 }}
 

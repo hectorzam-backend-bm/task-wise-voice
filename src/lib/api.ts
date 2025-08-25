@@ -8,7 +8,6 @@ import { UsersApiResponse } from "./types/users";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Zod schemas para validación de argumentos
 export const CreateActivityArgsSchema = z.object({
   projectName: z.string().min(1, "Project name is required"),
   title: z.string().min(1, "Task title is required"),
@@ -23,13 +22,11 @@ export const FindProjectArgsSchema = z.object({
   projectName: z.string().min(1, "Project name is required"),
 });
 
-// Union type para todos los argumentos posibles
 export const ApiArgsSchema = z.union([
   CreateActivityArgsSchema,
   FindProjectArgsSchema,
 ]);
 
-// TypeScript types derivados de los schemas
 export type CreateActivityArgs = z.infer<typeof CreateActivityArgsSchema>;
 export type FindProjectArgs = z.infer<typeof FindProjectArgsSchema>;
 export type ApiArgs = z.infer<typeof ApiArgsSchema>;
@@ -39,13 +36,11 @@ const getHeaders = (token: string) => ({
   "Content-Type": "application/json",
 });
 
-// Get project ID by name using real API
 const getProjectIdByName = async (
   name: string,
   token: string
 ): Promise<number | null> => {
   try {
-    console.log(`Searching for project ID for: ${name}`);
     const response = await axios.get<FindProjectsApiResponse>(
       `${API_BASE_URL}/projects/`,
       {
@@ -68,9 +63,8 @@ const getModuleIdByName = async (
   name: string | undefined,
   projectId: number,
   token: string
-): Promise<number | null> => {
+): Promise<Module | null> => {
   try {
-    console.log(`Searching for module ID for: ${name} in project ${projectId}`);
     const response = await axios.get<ModulesApiResponse>(
       `${API_BASE_URL}/projects/project/${projectId}/module`,
       {
@@ -78,14 +72,14 @@ const getModuleIdByName = async (
       }
     );
     const modules = response.data.data;
-    console.log(`Found modules: ${modules.map((m) => m.name).join(", ")}`);
+
     if (!name) {
-      return modules[0]?.id ?? null;
+      return modules[0] ?? null;
     }
     const module = modules.find((m) =>
       m.name.toLowerCase().includes(name.toLowerCase())
     );
-    return module?.id ?? modules[0]?.id ?? null;
+    return module ?? modules[0] ?? null;
   } catch (error) {
     console.error("Error finding module:", error);
     return null;
@@ -96,9 +90,8 @@ const getPhaseIdByName = async (
   name: string | undefined,
   projectId: number,
   token: string
-): Promise<number | null> => {
+): Promise<Phase | null> => {
   try {
-    console.log(`Searching for phase ID for: ${name} in project ${projectId}`);
     const response = await axios.get<PhaseApiResponse>(
       `${API_BASE_URL}/projects/project/${projectId}/phase`,
       {
@@ -108,14 +101,14 @@ const getPhaseIdByName = async (
     const phases = response.data.data;
 
     if (!name) {
-      return phases[0]?.id ?? null;
+      return phases[0] ?? null;
     }
 
     const phase = phases.find((p) =>
       p.name.toLowerCase().includes(name.toLowerCase())
     );
 
-    return phase ? phase.id : phases[0]?.id ?? null;
+    return phase ?? phases[0] ?? null;
   } catch (error) {
     console.error("Error finding phase:", error);
     return null;
@@ -128,7 +121,6 @@ const getUserIdByName = async (
   token: string
 ): Promise<number | null> => {
   try {
-    console.log(`Searching for user ID for: ${name} in project ${projectId}`);
     const url = `${API_BASE_URL}/admin/users/find?pagination[page]=1&pagination[pageSize]=15&filters[projectIds][]=${projectId}`;
     const response = await axios.get<UsersApiResponse>(url, {
       headers: getHeaders(token),
@@ -151,9 +143,6 @@ export const callCreateActivityAPI = async (
   token: string,
   onProgress?: ProgressCallback
 ): Promise<string> => {
-  console.log("Calling Create Activity Flow with args:", args);
-
-  // Mostrar campos identificados
   onProgress?.(`📋 Campos identificados:
 • Proyecto: ${args.projectName}
 • Tarea: ${args.title}
@@ -179,7 +168,6 @@ export const callCreateActivityAPI = async (
       `✅ Proyecto encontrado: ${args.projectName} (ID: ${projectId})`
     );
 
-    // Si no se especifica módulo, obtener el primero disponible
     onProgress?.(
       `🔍 ${
         args.moduleName
@@ -187,8 +175,8 @@ export const callCreateActivityAPI = async (
           : "Obteniendo primer módulo disponible"
       }...`
     );
-    const moduleId = await getModuleIdByName(args.moduleName, projectId, token);
-    if (!moduleId) {
+    const module = await getModuleIdByName(args.moduleName, projectId, token);
+    if (!module) {
       const errorMsg = args.moduleName
         ? `❌ Módulo "${args.moduleName}" no encontrado en el proyecto.`
         : `❌ No se encontraron módulos en el proyecto.`;
@@ -196,14 +184,7 @@ export const callCreateActivityAPI = async (
       return errorMsg;
     }
 
-    // Obtener información del módulo para mostrar al usuario
-    const modules = await getProjectModules(projectId, token);
-    const selectedModule = modules.find((m) => m.id === moduleId);
-    onProgress?.(
-      `✅ Módulo seleccionado: ${
-        selectedModule?.name || "Desconocido"
-      } (ID: ${moduleId})`
-    );
+    onProgress?.(`✅ Módulo seleccionado: ${module.name} (ID: ${module})`);
 
     // Si no se especifica fase, obtener la primera disponible
     onProgress?.(
@@ -213,8 +194,8 @@ export const callCreateActivityAPI = async (
           : "Obteniendo primera fase disponible"
       }...`
     );
-    const phaseId = await getPhaseIdByName(args.phaseName, projectId, token);
-    if (!phaseId) {
+    const phase = await getPhaseIdByName(args.phaseName, projectId, token);
+    if (!phase) {
       const errorMsg = args.phaseName
         ? `❌ Fase "${args.phaseName}" no encontrada en el proyecto.`
         : `❌ No se encontraron fases en el proyecto.`;
@@ -222,14 +203,7 @@ export const callCreateActivityAPI = async (
       return errorMsg;
     }
 
-    // Obtener información de la fase para mostrar al usuario
-    const phases = await getProjectPhases(projectId, token);
-    const selectedPhase = phases.find((p) => p.id === phaseId);
-    onProgress?.(
-      `✅ Fase seleccionada: ${
-        selectedPhase?.name || "Desconocida"
-      } (ID: ${phaseId})`
-    );
+    onProgress?.(`✅ Fase seleccionada: ${phase.name} (ID: ${phase.id})`);
 
     // Si se especifica usuario, buscarlo; si no, obtener el primero disponible
     onProgress?.(`🔍 Buscando usuario "${args.userName}"...`);
@@ -258,8 +232,8 @@ export const callCreateActivityAPI = async (
       isDelayed: false, // Valor estático
       name: args.title,
       typeId: 5, // Valor estático
-      phaseId: phaseId,
-      moduleId: moduleId,
+      phaseId: phase.id,
+      moduleId: module.id,
       plannedStartDate: plannedDate,
       plannedEndDate: plannedDate,
       priorityId: 1, // Valor estático
@@ -268,7 +242,6 @@ export const callCreateActivityAPI = async (
       responsibleId: responsibleId,
     } satisfies CreateTaskPayload;
 
-    console.log("Sending to API:", requestBody);
     onProgress?.(`🚀 Creando tarea en el sistema...`);
 
     // Llamada real a la API
@@ -304,8 +277,6 @@ export const callFindProjectAPI = async (
   token: string,
   onProgress?: ProgressCallback
 ): Promise<string> => {
-  console.log("Calling Find Project API with args:", args);
-
   onProgress?.(`📋 Buscando proyecto: ${args.projectName}`);
 
   try {
@@ -346,41 +317,5 @@ export const callFindProjectAPI = async (
     }
     onProgress?.(errorMessage, true);
     return errorMessage;
-  }
-};
-
-export const getProjectModules = async (
-  projectId: number,
-  token: string
-): Promise<Module[]> => {
-  try {
-    const response = await axios.get<ModulesApiResponse>(
-      `${API_BASE_URL}/projects/${projectId}/modules`,
-      {
-        headers: getHeaders(token),
-      }
-    );
-    return response.data.data;
-  } catch (error) {
-    console.error("Error fetching modules:", error);
-    return [];
-  }
-};
-
-export const getProjectPhases = async (
-  projectId: number,
-  token: string
-): Promise<Phase[]> => {
-  try {
-    const response = await axios.get<PhaseApiResponse>(
-      `${API_BASE_URL}/projects/${projectId}/phases`,
-      {
-        headers: getHeaders(token),
-      }
-    );
-    return response.data.data;
-  } catch (error) {
-    console.error("Error fetching phases:", error);
-    return [];
   }
 };
