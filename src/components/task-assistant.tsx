@@ -277,9 +277,10 @@ export function TaskAssistant() {
   const MemoizedLoader = useMemo(() => <Loader2 className="mr-2 h-4 w-4 animate-spin" />, []);
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6 bg-background text-foreground">
-      <div className="text-center">
-        <div className="mx-auto mb-4 w-24 h-24 relative">
+    <div className="w-full max-w-7xl mx-auto p-4 bg-background text-foreground">
+      {/* Header con logo */}
+      <div className="text-center mb-6">
+        <div className="mx-auto mb-4 w-20 h-20 relative">
           <Image
             src="/logo.png"
             alt="RADictar Logo"
@@ -289,80 +290,178 @@ export function TaskAssistant() {
           />
         </div>
         <h1 className="text-heading-1 text-primary">RADictar</h1>
-        <p className="text-body text-subtext-color mt-2">Tu asistente de tareas por voz. Configura tu token y habla para empezar.</p>
+        <p className="text-body text-subtext-color mt-2">Tu asistente de tareas por voz</p>
       </div>
 
-      <Card className='bg-card'>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-heading-2 text-foreground">
-            <KeyRound className="w-6 h-6 text-primary" /> Configuración de Autenticación
-          </CardTitle>
-          <CardDescription className="text-body text-subtext-color">
-            Guarda tu token de API de forma segura. Se almacenará en tu navegador.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex items-center gap-4">
-          <Input
-            type="password"
-            placeholder="Introduce tu token de API"
-            value={inputToken}
-            onChange={(e) => setInputToken(e.target.value)}
-            className="grow bg-input border-border text-foreground"
-          />
-          <Button onClick={handleSaveToken} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            <Save className="w-4 h-4 mr-2" /> Guardar
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Layout responsivo: 2 columnas en desktop, 1 columna en móvil */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)] max-h-[900px]">
 
-      <Card className='bg-card'>
-        <CardHeader>
-          <CardTitle className="text-heading-2 text-foreground">Crear Nueva Tarea</CardTitle>
-          <CardDescription className="text-body text-subtext-color">
-            Presiona el micrófono y dí tu comando. Formato: 'Crear tarea [nombre] en proyecto [proyecto] para [usuario]'. También puedes especificar módulo y fase opcionalmente: 'Crear tarea [nombre] en proyecto [proyecto] módulo [módulo] fase [fase] para [usuario]'.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-6">
-          <Button
-            size="lg"
-            className={cn(
-              "w-24 h-24 rounded-full transition-all duration-300 ease-in-out shadow-lg transform hover:scale-105",
-              isListening
-                ? "bg-destructive hover:bg-destructive/90 animate-pulse text-destructive-foreground"
-                : "bg-primary hover:bg-primary/90 text-primary-foreground",
-            )}
-            onClick={handleMicClick}
-            disabled={isLoading || !recognitionSupported}
-            aria-label={isListening ? "Detener grabación" : "Iniciar grabación"}
-          >
-            <Mic className="w-10 h-10" />
-          </Button>
-
-          <div className="w-full space-y-2 text-center">
-            <p className="text-caption text-subtext-color h-5">
-              {isLoading ? 'Procesando...' : statusMessage}
-            </p>
-
-            {/* Barra de progreso visual */}
-            {isLoading && (
-              <div className="w-full mb-4">
-                <Progress value={progressValue} className="w-full h-2" />
-                <p className="text-xs text-subtext-color mt-1">{progressValue}% completado</p>
+        {/* Columna izquierda: Controles */}
+        <div className="space-y-4 lg:space-y-6 order-1">
+          {/* Configuración de Token */}
+          <Card className="bg-card h-fit">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg lg:text-xl text-foreground">
+                <KeyRound className="w-5 h-5 text-primary" />
+                Configuración
+              </CardTitle>
+              <CardDescription className="text-sm text-subtext-color">
+                Configura tu token de API
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Input
+                  type="password"
+                  placeholder="Token de API"
+                  value={inputToken}
+                  onChange={(e) => setInputToken(e.target.value)}
+                  className="grow bg-input border-border text-foreground text-sm"
+                />
+                <Button
+                  onClick={handleSaveToken}
+                  size="sm"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 flex-shrink-0"
+                >
+                  <Save className="w-4 h-4" />
+                  <span className="ml-1 hidden sm:inline">Guardar</span>
+                </Button>
               </div>
-            )}
+              {token && (
+                <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                  ✅ Token configurado correctamente
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
-            <Textarea
-              readOnly
-              value={transcript || "El comando de voz transcrito aparecerá aquí."}
-              className="w-full p-4 rounded-md bg-card text-foreground border border-border placeholder:text-subtext-color"
-              rows={3}
-            />
+          {/* Control de Voz */}
+          <Card className="bg-card h-fit">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg lg:text-xl text-foreground">
+                Control de Voz
+              </CardTitle>
+              <CardDescription className="text-sm text-subtext-color">
+                <span className="hidden sm:inline">Presiona para hablar. Formato: 'Crear tarea [nombre] en proyecto [proyecto] para [usuario]'</span>
+                <span className="sm:hidden">Presiona para hablar y crear tareas</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+              {/* Botón de micrófono */}
+              <Button
+                size="lg"
+                className={cn(
+                  "w-16 h-16 lg:w-20 lg:h-20 rounded-full transition-all duration-300 ease-in-out shadow-lg transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2",
+                  isListening
+                    ? "bg-destructive hover:bg-destructive/90 animate-pulse text-destructive-foreground focus:ring-destructive/30"
+                    : "bg-primary hover:bg-primary/90 text-primary-foreground focus:ring-primary/30",
+                )}
+                onClick={handleMicClick}
+                disabled={isLoading || !recognitionSupported}
+                aria-label={isListening ? "Detener grabación" : "Iniciar grabación"}
+              >
+                <Mic className="w-6 h-6 lg:w-8 lg:h-8" />
+              </Button>
 
-            {/* Panel de progreso en tiempo real */}
-            {progressMessages.length > 0 && (
-              <div className="w-full mt-4 p-4 bg-muted rounded-lg border border-border">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="text-sm font-medium text-foreground">📋 Progreso del Procesamiento:</h4>
+              {/* Estado actual */}
+              <div className="text-center w-full">
+                <p className="text-sm text-subtext-color mb-2 min-h-[20px]">
+                  {isLoading
+                    ? '⏳ Procesando...'
+                    : isListening
+                      ? '🎤 Escuchando...'
+                      : statusMessage
+                  }
+                </p>
+
+                {/* Barra de progreso compacta */}
+                {isLoading && (
+                  <div className="w-full mb-3">
+                    <Progress value={progressValue} className="w-full h-2 mb-1" />
+                    <p className="text-xs text-subtext-color">{progressValue}% completado</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Transcripción */}
+              <Textarea
+                readOnly
+                value={transcript || "La transcripción aparecerá aquí..."}
+                className="w-full p-3 rounded-md bg-muted/50 text-foreground border border-border placeholder:text-subtext-color text-sm resize-none"
+                rows={3}
+                placeholder="La transcripción de voz aparecerá aquí..."
+              />
+
+              {/* Diagnósticos de error de voz */}
+              {speechError && (
+                <div className="w-full space-y-2">
+                  <div className="p-2 bg-destructive/10 rounded border border-destructive/20 text-center">
+                    <p className="text-sm text-destructive mb-2">⚠️ Error de voz detectado</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const diagnosticInfo = {
+                          error: speechError,
+                          timestamp: new Date().toISOString(),
+                          userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server-side',
+                          isHttps: typeof window !== 'undefined' ? window.location.protocol === 'https:' : false,
+                          speechRecognitionAvailable: typeof window !== 'undefined' ? typeof window.SpeechRecognition !== 'undefined' : false,
+                          webkitSpeechRecognitionAvailable: typeof window !== 'undefined' ? typeof window.webkitSpeechRecognition !== 'undefined' : false,
+                          permissions: typeof window !== 'undefined' && navigator.permissions ? 'API disponible' : 'API no disponible'
+                        };
+                        console.log('Información de diagnóstico completa:', diagnosticInfo);
+                        if (typeof window !== 'undefined') {
+                          navigator.clipboard?.writeText(JSON.stringify(diagnosticInfo, null, 2));
+                        }
+                        toast({
+                          title: "Información copiada",
+                          description: "Los datos de diagnóstico se copiaron al portapapeles.",
+                        });
+                      }}
+                      className="text-xs w-full"
+                    >
+                      📋 Copiar diagnóstico
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Información de compatibilidad */}
+              {!recognitionSupported && (
+                <div className="w-full text-center space-y-2 p-3 bg-destructive/10 rounded border border-destructive/20">
+                  <p className="text-sm text-destructive font-medium">
+                    ⚠️ Reconocimiento de voz no disponible
+                  </p>
+                  <details className="text-xs text-subtext-color">
+                    <summary className="cursor-pointer hover:text-foreground transition-colors">Ver detalles técnicos</summary>
+                    <div className="mt-2 p-2 bg-card rounded border text-left space-y-1">
+                      <p><strong>Navegador:</strong> {typeof window !== 'undefined' ? navigator.userAgent.split(' ')[0] : 'N/A'}</p>
+                      <p><strong>HTTPS:</strong> {typeof window !== 'undefined' ? (window.location.protocol === 'https:' ? 'Sí' : 'No') : 'N/A'}</p>
+                      <p><strong>Speech API:</strong> {typeof window !== 'undefined' ? (typeof window.SpeechRecognition !== 'undefined' || typeof window.webkitSpeechRecognition !== 'undefined' ? 'Disponible' : 'No disponible') : 'N/A'}</p>
+                    </div>
+                  </details>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Columna derecha: Log del procedimiento */}
+        <div className="space-y-4 order-2 lg:order-2">
+          <Card className="bg-card h-full flex flex-col min-h-[400px] lg:min-h-[500px]">
+            <CardHeader className="flex-shrink-0 pb-3">
+              <div className="flex justify-between items-start gap-4">
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="text-lg lg:text-xl text-foreground">
+                    📋 Log del Procedimiento
+                  </CardTitle>
+                  <CardDescription className="text-sm text-subtext-color">
+                    <span className="hidden sm:inline">Seguimiento en tiempo real del procesamiento</span>
+                    <span className="sm:hidden">Progreso en tiempo real</span>
+                  </CardDescription>
+                </div>
+                {progressMessages.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -371,78 +470,57 @@ export function TaskAssistant() {
                       setProgressValue(0);
                       setStatusMessage("Di un comando para empezar.");
                     }}
-                    className="text-xs h-6 px-2"
+                    className="text-xs h-8 px-3 flex-shrink-0"
                   >
-                    🗑️ Limpiar
+                    🗑️ <span className="ml-1 hidden sm:inline">Limpiar</span>
                   </Button>
-                </div>
-                <div className="space-y-1 max-h-40 overflow-y-auto">
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col min-h-0 pt-0">
+              {progressMessages.length > 0 ? (
+                <div className="space-y-2 overflow-y-auto flex-1 pr-2 scrollbar-thin">
                   {progressMessages.map((message, index) => (
                     <div
                       key={index}
                       className={cn(
-                        "text-xs p-2 rounded text-left",
+                        "text-sm p-3 rounded-lg text-left transition-all duration-200 animate-in slide-in-from-top-2",
                         message.includes("❌")
-                          ? "bg-destructive/10 text-destructive border border-destructive/20"
+                          ? "log-message-error"
                           : message.includes("✅")
-                            ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800"
-                            : "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                            ? "log-message-success"
+                            : message.includes("📋")
+                              ? "log-message-info"
+                              : "log-message-default"
                       )}
                     >
-                      {message}
+                      <div className="font-medium break-words">{message}</div>
+                      <div className="text-xs opacity-70 mt-1">
+                        {new Date().toLocaleTimeString('es-ES', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit'
+                        })}
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {speechError && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const diagnosticInfo = {
-                    error: speechError,
-                    timestamp: new Date().toISOString(),
-                    userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server-side',
-                    isHttps: typeof window !== 'undefined' ? window.location.protocol === 'https:' : false,
-                    speechRecognitionAvailable: typeof window !== 'undefined' ? typeof window.SpeechRecognition !== 'undefined' : false,
-                    webkitSpeechRecognitionAvailable: typeof window !== 'undefined' ? typeof window.webkitSpeechRecognition !== 'undefined' : false,
-                    permissions: typeof window !== 'undefined' && navigator.permissions ? 'API disponible' : 'API no disponible'
-                  };
-                  console.log('Información de diagnóstico completa:', diagnosticInfo);
-                  if (typeof window !== 'undefined') {
-                    navigator.clipboard?.writeText(JSON.stringify(diagnosticInfo, null, 2));
-                  }
-                  toast({
-                    title: "Información copiada",
-                    description: "La información de diagnóstico se ha copiado al portapapeles y mostrado en la consola.",
-                  });
-                }}
-                className="text-xs"
-              >
-                📋 Copiar diagnóstico
-              </Button>
-            )}
-          </div>
-          {!recognitionSupported && (
-            <div className="text-center space-y-2">
-              <p className="text-caption text-destructive">
-                El reconocimiento de voz no es compatible con este navegador.
-              </p>
-              <details className="text-xs text-subtext-color">
-                <summary className="cursor-pointer">Información de diagnóstico</summary>
-                <div className="mt-2 p-2 bg-card rounded border text-left">
-                  <p>Navegador: {typeof window !== 'undefined' ? navigator.userAgent : 'Server-side'}</p>
-                  <p>HTTPS: {typeof window !== 'undefined' ? (window.location.protocol === 'https:' ? 'Sí' : 'No') : 'N/A'}</p>
-                  <p>SpeechRecognition: {typeof window !== 'undefined' ? (typeof window.SpeechRecognition !== 'undefined' ? 'Disponible' : 'No disponible') : 'N/A'}</p>
-                  <p>webkitSpeechRecognition: {typeof window !== 'undefined' ? (typeof window.webkitSpeechRecognition !== 'undefined' ? 'Disponible' : 'No disponible') : 'N/A'}</p>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-center text-subtext-color">
+                  <div className="max-w-xs">
+                    <div className="text-4xl mb-4">🎤</div>
+                    <p className="text-lg font-medium">¡Listo para empezar!</p>
+                    <p className="text-sm mt-2 opacity-80">
+                      <span className="hidden sm:inline">Configura tu token y presiona el micrófono para comenzar</span>
+                      <span className="sm:hidden">Configura tu token y comienza</span>
+                    </p>
+                  </div>
                 </div>
-              </details>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
