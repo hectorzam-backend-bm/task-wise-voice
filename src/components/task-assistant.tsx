@@ -4,12 +4,14 @@ import { processVoiceCommand } from '@/ai/flows/process-voice-command';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useToast } from '@/hooks/use-toast';
 import * as api from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { KeyRound, Loader2, Mic, Save } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const initialStatusMessages = [
@@ -21,6 +23,8 @@ export function TaskAssistant() {
   const [inputToken, setInputToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [progressMessages, setProgressMessages] = useState<string[]>([]);
+  const [progressValue, setProgressValue] = useState(0);
   const [hasProcessed, setHasProcessed] = useState(false);
 
   const { toast } = useToast();
@@ -42,20 +46,66 @@ export function TaskAssistant() {
 
     setIsLoading(true);
     setStatusMessage("Procesando comando con IA...");
+    setProgressMessages([]);
+    setProgressValue(0);
     setHasProcessed(true);
 
+    // Callback para mostrar progreso en tiempo real
+    const onProgress = (message: string, isError = false) => {
+      setProgressMessages(prev => [...prev, message]);
+      setStatusMessage(message);
+
+      // Actualizar barra de progreso basado en el tipo de mensaje
+      if (message.includes("📋 Campos identificados")) {
+        setProgressValue(10);
+      } else if (message.includes("🔍 Buscando proyecto")) {
+        setProgressValue(20);
+      } else if (message.includes("✅ Proyecto encontrado")) {
+        setProgressValue(30);
+      } else if (message.includes("🔍") && message.includes("módulo")) {
+        setProgressValue(40);
+      } else if (message.includes("✅") && message.includes("Módulo seleccionado")) {
+        setProgressValue(50);
+      } else if (message.includes("🔍") && message.includes("fase")) {
+        setProgressValue(60);
+      } else if (message.includes("✅") && message.includes("Fase seleccionada")) {
+        setProgressValue(70);
+      } else if (message.includes("🔍 Buscando usuario")) {
+        setProgressValue(80);
+      } else if (message.includes("✅ Usuario")) {
+        setProgressValue(85);
+      } else if (message.includes("📅 Preparando")) {
+        setProgressValue(90);
+      } else if (message.includes("🚀 Creando tarea")) {
+        setProgressValue(95);
+      } else if (message.includes("✅ ¡Tarea") && message.includes("creada con éxito")) {
+        setProgressValue(100);
+      }
+
+      if (isError) {
+        toast({
+          title: "Error en el Proceso",
+          description: message,
+          variant: "destructive",
+        });
+      }
+    };
+
     try {
+      setStatusMessage("🤖 Analizando comando con IA...");
+      setProgressValue(5);
       const structuredResponse = await processVoiceCommand({ text, token });
 
-      setStatusMessage(`Acción reconocida: ${structuredResponse.tool}. Ejecutando...`);
+      setStatusMessage(`🎯 Acción reconocida: ${structuredResponse.tool}. Ejecutando...`);
+      setProgressValue(15);
 
       let resultMessage = "";
       switch (structuredResponse.tool) {
         case 'createActivity':
-          resultMessage = await api.callCreateActivityAPI(structuredResponse.args, token);
+          resultMessage = await api.callCreateActivityAPI(structuredResponse.args as api.CreateActivityArgs, token, onProgress);
           break;
         case 'findProject':
-          resultMessage = await api.callFindProjectAPI(structuredResponse.args, token);
+          resultMessage = await api.callFindProjectAPI(structuredResponse.args as api.FindProjectArgs, token, onProgress);
           break;
         default:
           resultMessage = "Error: La IA no pudo determinar una acción válida.";
@@ -65,15 +115,19 @@ export function TaskAssistant() {
             variant: "destructive",
           });
       }
+
       setStatusMessage(resultMessage);
+      setProgressValue(100);
       toast({
         title: "Procesamiento Completo",
-        description: resultMessage,
+        description: resultMessage.length > 100 ? "Tarea procesada exitosamente" : resultMessage,
       });
     } catch (error) {
       console.error("Error processing voice command:", error);
       const errorMessage = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
       setStatusMessage(`❌ Error: ${errorMessage}`);
+      setProgressMessages(prev => [...prev, `❌ Error: ${errorMessage}`]);
+      setProgressValue(0);
       toast({
         title: "Error en el Procesamiento",
         description: errorMessage,
@@ -225,11 +279,15 @@ export function TaskAssistant() {
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6 bg-background text-foreground">
       <div className="text-center">
-        <img
-          src="logo.png"
-          alt="RADictar Logo"
-          className="mx-auto mb-4 w-24 h-24 object-contain rounded-full shadow-lg dark:shadow-white/10"
-        />
+        <div className="mx-auto mb-4 w-24 h-24 relative">
+          <Image
+            src="/logo.png"
+            alt="RADictar Logo"
+            fill
+            className="object-contain rounded-full shadow-lg dark:shadow-white/10"
+            priority
+          />
+        </div>
         <h1 className="text-heading-1 text-primary">RADictar</h1>
         <p className="text-body text-subtext-color mt-2">Tu asistente de tareas por voz. Configura tu token y habla para empezar.</p>
       </div>
@@ -261,7 +319,7 @@ export function TaskAssistant() {
         <CardHeader>
           <CardTitle className="text-heading-2 text-foreground">Crear Nueva Tarea</CardTitle>
           <CardDescription className="text-body text-subtext-color">
-            Presiona el micrófono y dí tu comando. Puedes decir: 'Crear tarea [nombre] en proyecto [proyecto]' o especificar módulo, fase y usuario: 'Crear tarea [nombre] en proyecto [proyecto] módulo [módulo] fase [fase] para [usuario]'.
+            Presiona el micrófono y dí tu comando. Formato: 'Crear tarea [nombre] en proyecto [proyecto] para [usuario]'. También puedes especificar módulo y fase opcionalmente: 'Crear tarea [nombre] en proyecto [proyecto] módulo [módulo] fase [fase] para [usuario]'.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-6">
@@ -284,12 +342,60 @@ export function TaskAssistant() {
             <p className="text-caption text-subtext-color h-5">
               {isLoading ? 'Procesando...' : statusMessage}
             </p>
+
+            {/* Barra de progreso visual */}
+            {isLoading && (
+              <div className="w-full mb-4">
+                <Progress value={progressValue} className="w-full h-2" />
+                <p className="text-xs text-subtext-color mt-1">{progressValue}% completado</p>
+              </div>
+            )}
+
             <Textarea
               readOnly
               value={transcript || "El comando de voz transcrito aparecerá aquí."}
               className="w-full p-4 rounded-md bg-card text-foreground border border-border placeholder:text-subtext-color"
               rows={3}
             />
+
+            {/* Panel de progreso en tiempo real */}
+            {progressMessages.length > 0 && (
+              <div className="w-full mt-4 p-4 bg-muted rounded-lg border border-border">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium text-foreground">📋 Progreso del Procesamiento:</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setProgressMessages([]);
+                      setProgressValue(0);
+                      setStatusMessage("Di un comando para empezar.");
+                    }}
+                    className="text-xs h-6 px-2"
+                  >
+                    🗑️ Limpiar
+                  </Button>
+                </div>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {progressMessages.map((message, index) => (
+                    <div
+                      key={index}
+                      className={cn(
+                        "text-xs p-2 rounded text-left",
+                        message.includes("❌")
+                          ? "bg-destructive/10 text-destructive border border-destructive/20"
+                          : message.includes("✅")
+                            ? "bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800"
+                            : "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                      )}
+                    >
+                      {message}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {speechError && (
               <Button
                 variant="outline"

@@ -23,3 +23,20 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CreateTaskPayload {
+  projectId: number;
+  statusId: number;
+  isIncidence: boolean;
+  isDelayed: boolean;
+  name: string;
+  typeId: number;
+  phaseId: number;
+  moduleId: number;
+  plannedStartDate: string;
+  plannedEndDate: string;
+  priorityId: number;
+  estimatedHours: string;
+  estimatedMinutes: string;
+  responsibleId: number;
+}

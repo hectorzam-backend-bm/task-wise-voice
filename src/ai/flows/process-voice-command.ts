@@ -1,14 +1,7 @@
 "use server";
 
-/**
- * @fileOverview A LangChain flow to process voice commands, transcribe them, and orchestrate API calls.
- *
- * - processVoiceCommand - A function that handles the voice command processing.
- * - ProcessVoiceCommandInput - The input type for the processVoiceCommand function.
- * - ProcessVoiceCommandOutput - The return type for the processVoiceCommand function.
- */
-
 import { chatModel } from "@/ai/langchain";
+import { CreateActivityArgsSchema, FindProjectArgsSchema } from "@/lib/api";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { z } from "zod";
@@ -21,9 +14,14 @@ export type ProcessVoiceCommandInput = z.infer<
   typeof ProcessVoiceCommandInputSchema
 >;
 
+// Esquema mejorado que usa los esquemas específicos de argumentos
 const ProcessVoiceCommandOutputSchema = z.object({
-  tool: z.string().describe("The tool to be called."),
-  args: z.record(z.any()).describe("The arguments for the tool."),
+  tool: z
+    .enum(["createActivity", "findProject"])
+    .describe("The tool to be called."),
+  args: z
+    .union([CreateActivityArgsSchema, FindProjectArgsSchema])
+    .describe("The arguments for the tool."),
 });
 export type ProcessVoiceCommandOutput = z.infer<
   typeof ProcessVoiceCommandOutputSchema
@@ -43,16 +41,22 @@ export async function processVoiceCommand(
 
 You will receive the transcribed text of a voice command, and you need to determine which tool to use and what arguments to pass to it.
 
+IMPORTANT TYPING RULES:
+- For 'createActivity': projectName, title, and userName are REQUIRED fields
+- For 'createActivity': moduleName and phaseName are OPTIONAL fields (only include if mentioned in the command)
+- For 'findProject': only projectName is required
+
 The primary flow is to create a task. To do this, you need to extract information from the voice command:
-- 'projectName' (required): The name of the project
-- 'title' (required): The name/description of the task
-- 'moduleName' (optional): The module name, if specified
-- 'phaseName' (optional): The phase name, if specified  
-- 'userName' (optional): The user name to assign the task to, if specified
+- 'projectName' (REQUIRED): The name of the project
+- 'title' (REQUIRED): The name/description of the task
+- 'userName' (REQUIRED): The user name to assign the task to
+- 'moduleName' (OPTIONAL): The module name, only if specifically mentioned
+- 'phaseName' (OPTIONAL): The phase name, only if specifically mentioned
 
-If module, phase, or user are not mentioned in the voice command, simply omit them from the args. The system will automatically use the first available option.
+If module or phase are not mentioned in the voice command, DO NOT include them in the args object.
+If no user is mentioned, you MUST ask for clarification or use a default user name like "Usuario".
 
-If the command is to create a task, the tool should be 'createActivity'. The arguments should include 'projectName' and 'title' as required, and optionally 'moduleName', 'phaseName', and 'userName' if mentioned.
+If the command is to create a task, the tool should be 'createActivity'. The arguments must include 'projectName', 'title', and 'userName' as required, and optionally 'moduleName' and 'phaseName' only if mentioned.
 
 If the command is to find something (like a project), the tool should be 'findProject' and the argument should be 'projectName'.
 
@@ -60,12 +64,13 @@ Always respond with a JSON object that contains the 'tool' and 'args' fields.
 
 Examples for creating a task:
 
-Minimal example (only project and task title):
+Minimal example (only project, task title, and user):
 {{
   "tool": "createActivity",
   "args": {{
     "projectName": "Kronos",
-    "title": "Revisar el login"
+    "title": "Revisar el login",
+    "userName": "Usuario"
   }}
 }}
 
