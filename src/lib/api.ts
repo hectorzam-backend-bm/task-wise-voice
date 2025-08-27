@@ -1,5 +1,6 @@
 import axios from "axios";
 import { z } from "zod";
+import { LoginApiResponse } from "./types/login";
 import { Module, ModulesApiResponse } from "./types/modules";
 import { Phase, PhaseApiResponse } from "./types/phases";
 import { FindProjectsApiResponse } from "./types/projects";
@@ -317,5 +318,19 @@ export const callFindProjectAPI = async (
     }
     onProgress?.(errorMessage, true);
     return errorMessage;
+  }
+};
+
+export const loginApi = async (tokenId: string): Promise<LoginApiResponse> => {
+  try {
+    const response = await axios.post<LoginApiResponse>(
+      `${API_BASE_URL}/auth/login`,
+      { tokenId },
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error en loginApi:", error);
+    throw error;
   }
 };
