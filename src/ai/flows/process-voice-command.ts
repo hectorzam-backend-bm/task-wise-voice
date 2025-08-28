@@ -102,10 +102,37 @@ Voice Command: {text}
 
   const formatInstructions = parser.getFormatInstructions();
 
-  const result = await chain.invoke({
-    text: input.text,
-    format_instructions: formatInstructions,
-  });
+  try {
+    const result = await chain.invoke({
+      text: input.text,
+      format_instructions: formatInstructions,
+    });
 
-  return result;
+    return result;
+  } catch (error: any) {
+    console.error("Error in processVoiceCommand:", error);
+
+    // Manejo específico de errores de rate limiting
+    if (
+      error?.status === 429 ||
+      error?.message?.includes("429") ||
+      error?.message?.includes("rate limit")
+    ) {
+      throw new Error(
+        "Rate limit excedido. Por favor, espera un momento antes de intentar nuevamente."
+      );
+    }
+
+    // Manejo de otros errores de OpenAI
+    if (error?.status >= 400) {
+      throw new Error(
+        `Error de OpenAI (${error.status}): ${
+          error.message || "Error desconocido"
+        }`
+      );
+    }
+
+    // Re-lanzar otros errores
+    throw error;
+  }
 }

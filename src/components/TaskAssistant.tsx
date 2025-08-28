@@ -65,6 +65,12 @@ export function TaskAssistant() {
   }, [toast]);
 
   const handleProcessVoiceCommand = useCallback(async (text: string) => {
+    // Evitar llamadas múltiples simultáneas
+    if (isLoading) {
+      console.log("Ya hay un comando en proceso, ignorando nueva llamada");
+      return;
+    }
+
     if (!token) {
       setStatusMessage("Error: Por favor, inicia sesión primero.");
       toast({
@@ -159,24 +165,44 @@ export function TaskAssistant() {
       });
     } catch (error) {
       console.error("Error processing voice command:", error);
-      const errorMessage = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
+      let errorMessage = "Ocurrió un error desconocido.";
+      let errorTitle = "Error en el Procesamiento";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Manejo específico de rate limiting
+        if (error.message.includes('Rate limit') || error.message.includes('429')) {
+          errorTitle = "Límite de Uso Excedido";
+          errorMessage = "Has alcanzado el límite de uso de la API. Por favor, espera unos minutos antes de intentar nuevamente.";
+        }
+      }
+
       setStatusMessage(`❌ Error: ${errorMessage}`);
       setProgressMessages(prev => [...prev, `❌ Error: ${errorMessage}`]);
       setProgressValue(0);
       toast({
-        title: "Error en el Procesamiento",
+        title: errorTitle,
         description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [token, toast]);
+  }, [token, toast, isLoading]);
 
   const { transcript, isListening, startListening, stopListening, error: speechError, recognitionSupported } = useSpeechRecognition({
     onSpeechEnd: (finalTranscript) => {
-      if (finalTranscript && !hasProcessed) {
+      // Solo procesar si hay transcripción, no se ha procesado ya, y no hay otro comando en proceso
+      if (finalTranscript && !hasProcessed && !isLoading) {
+        console.log("Procesando transcripción:", finalTranscript);
         handleProcessVoiceCommand(finalTranscript);
+      } else {
+        console.log("Transcripción ignorada:", {
+          hasTranscript: !!finalTranscript,
+          hasProcessed,
+          isLoading
+        });
       }
     }
   });
