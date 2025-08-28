@@ -8,13 +8,11 @@ import { z } from "zod";
 
 const ProcessVoiceCommandInputSchema = z.object({
   text: z.string().describe("The transcribed text from the voice command."),
-  token: z.string().describe("The API token for authentication."),
 });
 export type ProcessVoiceCommandInput = z.infer<
   typeof ProcessVoiceCommandInputSchema
 >;
 
-// Esquema mejorado que usa los esquemas específicos de argumentos
 const ProcessVoiceCommandOutputSchema = z.object({
   tool: z
     .enum(["createActivity", "findProject"])
@@ -97,19 +95,15 @@ Example for finding a project:
 }}
 
 Voice Command: {text}
-API Token: {token}
 
 {format_instructions}`);
 
-  // Crear la cadena de procesamiento
   const chain = promptTemplate.pipe(chatModel).pipe(parser);
 
-  // Ejecutar la cadena con las instrucciones de formato
   const formatInstructions = parser.getFormatInstructions();
 
   const result = await chain.invoke({
     text: input.text,
-    token: input.token,
     format_instructions: formatInstructions,
   });
 

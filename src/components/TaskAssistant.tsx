@@ -129,7 +129,7 @@ export function TaskAssistant() {
     try {
       setStatusMessage("🤖 Analizando comando con IA...");
       setProgressValue(5);
-      const structuredResponse = await processVoiceCommand({ text, token });
+      const structuredResponse = await processVoiceCommand({ text });
 
       setStatusMessage(`🎯 Acción reconocida: ${structuredResponse.tool}. Ejecutando...`);
       setProgressValue(15);
