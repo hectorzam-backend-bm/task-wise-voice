@@ -1,17 +1,15 @@
 "use client";
 
-import { processVoiceCommand } from '@/ai/flows/process-voice-command';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useToast } from '@/hooks/use-toast';
-import * as api from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Loader2, LogOut, Mic, User } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GoogleSignInButton from './GoogleSignInButton';
 
 const initialStatusMessages = [
@@ -27,6 +25,8 @@ export function TaskAssistant() {
   const [progressMessages, setProgressMessages] = useState<string[]>([]);
   const [progressValue, setProgressValue] = useState(0);
   const [hasProcessed, setHasProcessed] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const processingRef = useRef(false);
 
   const { toast } = useToast();
 
@@ -65,12 +65,6 @@ export function TaskAssistant() {
   }, [toast]);
 
   const handleProcessVoiceCommand = useCallback(async (text: string) => {
-    // Evitar llamadas múltiples simultáneas
-    if (isLoading) {
-      console.log("Ya hay un comando en proceso, ignorando nueva llamada");
-      return;
-    }
-
     if (!token) {
       setStatusMessage("Error: Por favor, inicia sesión primero.");
       toast({
@@ -85,6 +79,14 @@ export function TaskAssistant() {
       return;
     }
 
+    // Evitar procesamiento duplicado con ref para prevenir race conditions
+    if (isProcessing || processingRef.current) {
+      console.log("Ya se está procesando un comando, ignorando...");
+      return;
+    }
+
+    processingRef.current = true;
+    setIsProcessing(true);
     setIsLoading(true);
     setStatusMessage("Procesando comando con IA...");
     setProgressMessages([]);
@@ -97,18 +99,20 @@ export function TaskAssistant() {
       setStatusMessage(message);
 
       // Actualizar barra de progreso basado en el tipo de mensaje
-      if (message.includes("📋 Campos identificados")) {
+      if (message.includes("🤖 Analizando comando")) {
         setProgressValue(10);
-      } else if (message.includes("🔍 Buscando proyecto")) {
+      } else if (message.includes("📋 Campos identificados")) {
         setProgressValue(20);
-      } else if (message.includes("✅ Proyecto encontrado")) {
+      } else if (message.includes("🔍 Buscando proyecto")) {
         setProgressValue(30);
-      } else if (message.includes("🔍") && message.includes("módulo")) {
+      } else if (message.includes("✅ Proyecto encontrado")) {
         setProgressValue(40);
-      } else if (message.includes("✅") && message.includes("Módulo seleccionado")) {
+      } else if (message.includes("🔍") && message.includes("módulo")) {
         setProgressValue(50);
-      } else if (message.includes("🔍") && message.includes("fase")) {
+      } else if (message.includes("✅") && message.includes("Módulo seleccionado")) {
         setProgressValue(60);
+      } else if (message.includes("🔍") && message.includes("fase")) {
+        setProgressValue(65);
       } else if (message.includes("✅") && message.includes("Fase seleccionada")) {
         setProgressValue(70);
       } else if (message.includes("🔍 Buscando usuario")) {
@@ -133,30 +137,57 @@ export function TaskAssistant() {
     };
 
     try {
-      setStatusMessage("🤖 Analizando comando con IA...");
-      setProgressValue(5);
-      const structuredResponse = await processVoiceCommand({ text });
+      onProgress("🤖 Analizando comando con IA...");
 
-      setStatusMessage(`🎯 Acción reconocida: ${structuredResponse.tool}. Ejecutando...`);
-      setProgressValue(15);
+      // Llamar a la nueva API route para procesar el comando de voz
+      const response = await fetch('/api/voice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
 
-      let resultMessage = "";
-      switch (structuredResponse.tool) {
-        case 'createActivity':
-          resultMessage = await api.callCreateActivityAPI(structuredResponse.args as api.CreateActivityArgs, token, onProgress);
-          break;
-        case 'findProject':
-          resultMessage = await api.callFindProjectAPI(structuredResponse.args as api.FindProjectArgs, token, onProgress);
-          break;
-        default:
-          resultMessage = "Error: La IA no pudo determinar una acción válida.";
-          toast({
-            title: "Acción no válida",
-            description: `El comando no pudo ser mapeado a una acción conocida.`,
-            variant: "destructive",
-          });
+      if (!response.ok) {
+        throw new Error(`Error en la API: ${response.status} ${response.statusText}`);
       }
 
+      const structuredResponse = await response.json();
+
+      onProgress(`🎯 Comando procesado. Creando actividad: "${structuredResponse.args.title}"`);
+
+      // Llamar a la nueva API route para crear la actividad
+      const activityResponse = await fetch('/api/activity', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          args: structuredResponse.args,
+          token: token,
+        }),
+      });
+
+      const activityResult = await activityResponse.json();
+
+      if (!activityResponse.ok) {
+        // Si hay mensajes de progreso, mostrarlos antes del error
+        if (activityResult.progressMessages) {
+          activityResult.progressMessages.forEach((progressMsg: { message: string; isError?: boolean }) => {
+            onProgress(progressMsg.message, progressMsg.isError);
+          });
+        }
+        throw new Error(activityResult.error || 'Error al crear la actividad');
+      }
+
+      // Mostrar todos los mensajes de progreso solo si la respuesta fue exitosa
+      if (activityResult.progressMessages) {
+        activityResult.progressMessages.forEach((progressMsg: { message: string; isError?: boolean }) => {
+          onProgress(progressMsg.message, progressMsg.isError);
+        });
+      }
+
+      const resultMessage = activityResult.message;
       setStatusMessage(resultMessage);
       setProgressValue(100);
       toast({
@@ -165,44 +196,26 @@ export function TaskAssistant() {
       });
     } catch (error) {
       console.error("Error processing voice command:", error);
-      let errorMessage = "Ocurrió un error desconocido.";
-      let errorTitle = "Error en el Procesamiento";
-
-      if (error instanceof Error) {
-        errorMessage = error.message;
-
-        // Manejo específico de rate limiting
-        if (error.message.includes('Rate limit') || error.message.includes('429')) {
-          errorTitle = "Límite de Uso Excedido";
-          errorMessage = "Has alcanzado el límite de uso de la API. Por favor, espera unos minutos antes de intentar nuevamente.";
-        }
-      }
-
+      const errorMessage = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
       setStatusMessage(`❌ Error: ${errorMessage}`);
       setProgressMessages(prev => [...prev, `❌ Error: ${errorMessage}`]);
       setProgressValue(0);
       toast({
-        title: errorTitle,
+        title: "Error en el Procesamiento",
         description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+      setIsProcessing(false);
+      processingRef.current = false;
     }
-  }, [token, toast, isLoading]);
+  }, [token, toast]);
 
   const { transcript, isListening, startListening, stopListening, error: speechError, recognitionSupported } = useSpeechRecognition({
     onSpeechEnd: (finalTranscript) => {
-      // Solo procesar si hay transcripción, no se ha procesado ya, y no hay otro comando en proceso
-      if (finalTranscript && !hasProcessed && !isLoading) {
-        console.log("Procesando transcripción:", finalTranscript);
+      if (finalTranscript && !hasProcessed && !isProcessing && !processingRef.current) {
         handleProcessVoiceCommand(finalTranscript);
-      } else {
-        console.log("Transcripción ignorada:", {
-          hasTranscript: !!finalTranscript,
-          hasProcessed,
-          isLoading
-        });
       }
     }
   });
@@ -283,9 +296,7 @@ export function TaskAssistant() {
   const handleMicClick = async () => {
     if (isListening) {
       stopListening();
-      if (transcript) {
-        handleProcessVoiceCommand(transcript);
-      }
+      // No procesar aquí, dejar que onSpeechEnd se encargue del procesamiento automático
     } else {
       // Verificar permisos de micrófono antes de iniciar
       try {
@@ -314,6 +325,8 @@ export function TaskAssistant() {
         }
 
         setHasProcessed(false);
+        setIsProcessing(false);
+        processingRef.current = false;
         startListening();
         setStatusMessage("Escuchando...");
 
@@ -321,6 +334,8 @@ export function TaskAssistant() {
         console.error('Error al verificar permisos:', error);
         // Continuar sin verificación de permisos si la API no está disponible
         setHasProcessed(false);
+        setIsProcessing(false);
+        processingRef.current = false;
         startListening();
         setStatusMessage("Escuchando...");
       }
