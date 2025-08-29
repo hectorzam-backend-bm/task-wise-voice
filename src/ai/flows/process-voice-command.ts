@@ -40,7 +40,7 @@ RULES:
 The tool is always "createActivity". Respond ONLY with valid JSON.
 
 Example:
-{"tool": "createActivity","args": {"projectName":"Kronos","title":"Revisar login","userName":"Usuario"}}
+{{"tool": "createActivity","args": {{"projectName":"Kronos","title":"Revisar login","userName":"Usuario"}}}}
 
 Voice Command: {text}
 

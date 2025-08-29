@@ -91,18 +91,20 @@ export function TaskAssistant() {
       setStatusMessage(message);
 
       // Actualizar barra de progreso basado en el tipo de mensaje
-      if (message.includes("📋 Campos identificados")) {
+      if (message.includes("🤖 Analizando comando")) {
         setProgressValue(10);
-      } else if (message.includes("🔍 Buscando proyecto")) {
+      } else if (message.includes("📋 Campos identificados")) {
         setProgressValue(20);
-      } else if (message.includes("✅ Proyecto encontrado")) {
+      } else if (message.includes("🔍 Buscando proyecto")) {
         setProgressValue(30);
-      } else if (message.includes("🔍") && message.includes("módulo")) {
+      } else if (message.includes("✅ Proyecto encontrado")) {
         setProgressValue(40);
-      } else if (message.includes("✅") && message.includes("Módulo seleccionado")) {
+      } else if (message.includes("🔍") && message.includes("módulo")) {
         setProgressValue(50);
-      } else if (message.includes("🔍") && message.includes("fase")) {
+      } else if (message.includes("✅") && message.includes("Módulo seleccionado")) {
         setProgressValue(60);
+      } else if (message.includes("🔍") && message.includes("fase")) {
+        setProgressValue(65);
       } else if (message.includes("✅") && message.includes("Fase seleccionada")) {
         setProgressValue(70);
       } else if (message.includes("🔍 Buscando usuario")) {
@@ -127,26 +129,14 @@ export function TaskAssistant() {
     };
 
     try {
-      setStatusMessage("🤖 Analizando comando con IA...");
-      setProgressValue(5);
+      onProgress("🤖 Analizando comando con IA...");
+
       const structuredResponse = await processVoiceCommand({ text });
 
-      setStatusMessage(`🎯 Acción reconocida: ${structuredResponse.tool}. Ejecutando...`);
-      setProgressValue(15);
+      onProgress(`🎯 Comando procesado. Creando actividad: "${structuredResponse.args.title}"`);
 
-      let resultMessage = "";
-      switch (structuredResponse.tool) {
-        case 'createActivity':
-          resultMessage = await api.callCreateActivityAPI(structuredResponse.args as api.CreateActivityArgs, token, onProgress);
-          break;
-        default:
-          resultMessage = "Error: La IA no pudo determinar una acción válida.";
-          toast({
-            title: "Acción no válida",
-            description: `El comando no pudo ser mapeado a una acción conocida.`,
-            variant: "destructive",
-          });
-      }
+      // Ejecutar directamente la creación de actividad con los argumentos estructurados
+      const resultMessage = await api.callCreateActivityAPI(structuredResponse.args as api.CreateActivityArgs, token, onProgress);
 
       setStatusMessage(resultMessage);
       setProgressValue(100);

@@ -19,18 +19,7 @@ export const CreateActivityArgsSchema = z.object({
   estimatedMinutes: z.string().optional(),
 });
 
-export const FindProjectArgsSchema = z.object({
-  projectName: z.string().min(1, "Project name is required"),
-});
-
-export const ApiArgsSchema = z.union([
-  CreateActivityArgsSchema,
-  FindProjectArgsSchema,
-]);
-
 export type CreateActivityArgs = z.infer<typeof CreateActivityArgsSchema>;
-export type FindProjectArgs = z.infer<typeof FindProjectArgsSchema>;
-export type ApiArgs = z.infer<typeof ApiArgsSchema>;
 
 const getHeaders = (token: string) => ({
   Authorization: `Bearer ${token}`,
@@ -265,54 +254,6 @@ export const callCreateActivityAPI = async (
       errorMessage = `❌ Error al crear la tarea (${statusCode}): ${errorMsg}`;
     } else {
       errorMessage = `❌ Error al crear la tarea: ${
-        error instanceof Error ? error.message : "Error desconocido"
-      }`;
-    }
-    onProgress?.(errorMessage, true);
-    return errorMessage;
-  }
-};
-
-export const callFindProjectAPI = async (
-  args: FindProjectArgs,
-  token: string,
-  onProgress?: ProgressCallback
-): Promise<string> => {
-  onProgress?.(`📋 Buscando proyecto: ${args.projectName}`);
-
-  try {
-    onProgress?.(`🔍 Consultando lista de proyectos...`);
-    const response = await axios.get<FindProjectsApiResponse>(
-      `${API_BASE_URL}/projects/`,
-      {
-        headers: getHeaders(token),
-      }
-    );
-
-    onProgress?.(
-      `📊 Analizando ${response.data.data.length} proyectos disponibles...`
-    );
-    const project = response.data.data.find((p) =>
-      p.name.toLowerCase().includes(args.projectName.toLowerCase())
-    );
-
-    if (!project) {
-      const errorMsg = `🤔 No se encontró el proyecto con el nombre "${args.projectName}".`;
-      onProgress?.(errorMsg, true);
-      return errorMsg;
-    }
-
-    const successMessage = `✅ Proyecto encontrado: ${project.name} (ID: ${project.id}, Estado: ${project.status}, Cliente: ${project.client.name}).`;
-    onProgress?.(successMessage);
-    return successMessage;
-  } catch (error) {
-    console.error("Error finding project:", error);
-    let errorMessage = "";
-    if (axios.isAxiosError(error)) {
-      const errorMsg = error.response?.data?.message || error.message;
-      errorMessage = `❌ Error al buscar el proyecto: ${errorMsg}`;
-    } else {
-      errorMessage = `❌ Error al buscar el proyecto: ${
         error instanceof Error ? error.message : "Error desconocido"
       }`;
     }
