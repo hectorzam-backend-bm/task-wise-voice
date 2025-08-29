@@ -1,11 +1,13 @@
 "use client";
 
+import { processVoiceCommand } from '@/ai/process-voice-command';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useToast } from '@/hooks/use-toast';
+import { callCreateActivityAPI } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Loader2, LogOut, Mic, User } from "lucide-react";
 import Image from "next/image";
@@ -139,55 +141,14 @@ export function TaskAssistant() {
     try {
       onProgress("🤖 Analizando comando con IA...");
 
-      // Llamar a la nueva API route para procesar el comando de voz
-      const response = await fetch('/api/voice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error en la API: ${response.status} ${response.statusText}`);
-      }
-
-      const structuredResponse = await response.json();
+      // Usar directamente la función de procesamiento de voz
+      const structuredResponse = await processVoiceCommand({ text });
 
       onProgress(`🎯 Comando procesado. Creando actividad: "${structuredResponse.args.title}"`);
 
-      // Llamar a la nueva API route para crear la actividad
-      const activityResponse = await fetch('/api/activity', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          args: structuredResponse.args,
-          token: token,
-        }),
-      });
+      // Usar directamente la función de creación de actividad
+      const resultMessage = await callCreateActivityAPI(structuredResponse.args, token, onProgress);
 
-      const activityResult = await activityResponse.json();
-
-      if (!activityResponse.ok) {
-        // Si hay mensajes de progreso, mostrarlos antes del error
-        if (activityResult.progressMessages) {
-          activityResult.progressMessages.forEach((progressMsg: { message: string; isError?: boolean }) => {
-            onProgress(progressMsg.message, progressMsg.isError);
-          });
-        }
-        throw new Error(activityResult.error || 'Error al crear la actividad');
-      }
-
-      // Mostrar todos los mensajes de progreso solo si la respuesta fue exitosa
-      if (activityResult.progressMessages) {
-        activityResult.progressMessages.forEach((progressMsg: { message: string; isError?: boolean }) => {
-          onProgress(progressMsg.message, progressMsg.isError);
-        });
-      }
-
-      const resultMessage = activityResult.message;
       setStatusMessage(resultMessage);
       setProgressValue(100);
       toast({
