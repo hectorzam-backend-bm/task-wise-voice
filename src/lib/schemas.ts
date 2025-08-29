@@ -9,5 +9,3 @@ export const CreateActivityArgsSchema = z.object({
   estimatedHours: z.string().optional(),
   estimatedMinutes: z.string().optional(),
 });
-
-export type CreateActivityArgs = z.infer<typeof CreateActivityArgsSchema>;

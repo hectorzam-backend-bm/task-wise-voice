@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useToast } from '@/hooks/use-toast';
-import { callCreateActivityAPI } from '@/lib/api';
+import { createActivity } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Loader2, LogOut, Mic, User } from "lucide-react";
 import Image from "next/image";
@@ -147,7 +147,7 @@ export function TaskAssistant() {
       onProgress(`🎯 Comando procesado. Creando actividad: "${structuredResponse.args.title}"`);
 
       // Usar directamente la función de creación de actividad
-      const resultMessage = await callCreateActivityAPI(structuredResponse.args, token, onProgress);
+      const resultMessage = await createActivity(structuredResponse.args, token, onProgress);
 
       setStatusMessage(resultMessage);
       setProgressValue(100);

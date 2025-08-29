@@ -1,36 +1,18 @@
 import axios from "axios";
 import { z } from "zod";
+import { CreateActivityArgsSchema } from "./schemas";
 import { LoginApiResponse } from "./types/login";
 import { Module, ModulesApiResponse } from "./types/modules";
 import { Phase, PhaseApiResponse } from "./types/phases";
 import { FindProjectsApiResponse, Project } from "./types/projects";
 import { CreateTaskPayload, TaskApiResponse } from "./types/tasks";
 import { UsersApiResponse } from "./types/users";
+import { calculateSimilarity } from "./utils/calculate-similarity";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const CreateActivityArgsSchema = z.object({
-  projectName: z.string().min(1, "Project name is required"),
-  title: z.string().min(1, "Task title is required"),
-  userName: z.string().min(1, "User name is required"),
-  moduleName: z.string().optional(),
-  phaseName: z.string().optional(),
-  estimatedHours: z.string().optional(),
-  estimatedMinutes: z.string().optional(),
-});
-
-export const FindProjectArgsSchema = z.object({
-  projectName: z.string().min(1, "Project name is required"),
-});
-
-export const ApiArgsSchema = z.union([
-  CreateActivityArgsSchema,
-  FindProjectArgsSchema,
-]);
-
 export type CreateActivityArgs = z.infer<typeof CreateActivityArgsSchema>;
-export type FindProjectArgs = z.infer<typeof FindProjectArgsSchema>;
-export type ApiArgs = z.infer<typeof ApiArgsSchema>;
+export type ProgressCallback = (message: string, isError?: boolean) => void;
 
 const getHeaders = (token: string) => ({
   Authorization: `Bearer ${token}`,
@@ -42,18 +24,40 @@ const findProjectByName = async (
   token: string
 ): Promise<Project | null> => {
   try {
-    const response = await axios.get<FindProjectsApiResponse>(
+    let response = await axios.get<FindProjectsApiResponse>(
+      `${API_BASE_URL}/projects/`,
+      {
+        headers: getHeaders(token),
+        params: {
+          "filters[name]": name,
+        },
+      }
+    );
+
+    if (response.data.data.length === 1) {
+      return response.data.data[0];
+    }
+
+    response = await axios.get<FindProjectsApiResponse>(
       `${API_BASE_URL}/projects/`,
       {
         headers: getHeaders(token),
       }
     );
 
-    const project = response.data.data.find((p) =>
-      p.name.toLowerCase().includes(name.toLowerCase())
-    );
+    if (response.data.data.length === 0) {
+      return null;
+    }
 
-    return project ? project : null;
+    const projectsWithScore = response.data.data.map((project) => ({
+      project,
+      score: calculateSimilarity(project.name, name),
+    }));
+
+    projectsWithScore.sort((a, b) => b.score - a.score);
+
+    const bestMatch = projectsWithScore[0];
+    return bestMatch.score > 0 ? bestMatch.project : null;
   } catch (error) {
     console.error("Error finding project:", error);
     return null;
@@ -137,9 +141,7 @@ const getUserIdByName = async (
   }
 };
 
-export type ProgressCallback = (message: string, isError?: boolean) => void;
-
-export const callCreateActivityAPI = async (
+export const createActivity = async (
   args: CreateActivityArgs,
   token: string,
   onProgress?: ProgressCallback

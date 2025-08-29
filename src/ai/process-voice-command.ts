@@ -1,7 +1,7 @@
 "use server";
 
 import { chatModel } from "@/ai/langchain";
-import { CreateActivityArgsSchema } from "@/lib/api";
+import { CreateActivityArgsSchema } from "@/lib/schemas";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { StructuredOutputParser } from "langchain/output_parsers";
@@ -22,13 +22,11 @@ export type ProcessVoiceCommandOutput = z.infer<
   typeof ProcessVoiceCommandOutputSchema
 >;
 
-// ✅ Crear parser una sola vez
 const parser = StructuredOutputParser.fromZodSchema(
   ProcessVoiceCommandOutputSchema
 );
 const formatInstructions = parser.getFormatInstructions();
 
-// ✅ Prompt más corto y eficiente
 const promptTemplate =
   PromptTemplate.fromTemplate(`You are an AI assistant that processes voice commands to create tasks.
 
@@ -48,10 +46,8 @@ Voice Command: {text}
 
 {format_instructions}`);
 
-// ✅ Crear la secuencia solo una vez
 const chain = RunnableSequence.from([promptTemplate, chatModel, parser]);
 
-// 🚀 Función optimizada
 export async function processVoiceCommand(
   input: ProcessVoiceCommandInput
 ): Promise<ProcessVoiceCommandOutput> {
