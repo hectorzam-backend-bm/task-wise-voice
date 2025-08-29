@@ -1,8 +1,9 @@
 "use server";
 
 import { chatModel } from "@/ai/langchain";
-import { CreateActivityArgsSchema, FindProjectArgsSchema } from "@/lib/api";
+import { CreateActivityArgsSchema } from "@/lib/api";
 import { PromptTemplate } from "@langchain/core/prompts";
+import { RunnableSequence } from "@langchain/core/runnables";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { z } from "zod";
 
@@ -14,98 +15,44 @@ export type ProcessVoiceCommandInput = z.infer<
 >;
 
 const ProcessVoiceCommandOutputSchema = z.object({
-  tool: z
-    .enum(["createActivity", "findProject"])
-    .describe("The tool to be called."),
-  args: z
-    .union([CreateActivityArgsSchema, FindProjectArgsSchema])
-    .describe("The arguments for the tool."),
+  tool: z.enum(["createActivity"]).describe("The tool to be called."),
+  args: CreateActivityArgsSchema.describe("The arguments for the tool."),
 });
 export type ProcessVoiceCommandOutput = z.infer<
   typeof ProcessVoiceCommandOutputSchema
 >;
 
-export async function processVoiceCommand(
-  input: ProcessVoiceCommandInput
-): Promise<ProcessVoiceCommandOutput> {
-  // Crear el parser de salida estructurada
-  const parser = StructuredOutputParser.fromZodSchema(
-    ProcessVoiceCommandOutputSchema
-  );
+const parser = StructuredOutputParser.fromZodSchema(
+  ProcessVoiceCommandOutputSchema
+);
+const formatInstructions = parser.getFormatInstructions();
 
-  // Crear el template del prompt
-  const promptTemplate =
-    PromptTemplate.fromTemplate(`You are an AI assistant that processes voice commands to manage tasks.
+const promptTemplate =
+  PromptTemplate.fromTemplate(`You are an AI assistant that processes voice commands to create tasks.
 
-You will receive the transcribed text of a voice command, and you need to determine which tool to use and what arguments to pass to it.
+You will receive the transcribed text of a voice command, and you need to extract the information to create a task.
 
-IMPORTANT TYPING RULES:
-- For 'createActivity': projectName, title, and userName are REQUIRED fields
-- For 'createActivity': moduleName and phaseName are OPTIONAL fields (only include if mentioned in the command)
-- For 'findProject': only projectName is required
+RULES:
+- projectName, title, and userName are REQUIRED
+- moduleName and phaseName are OPTIONAL (only if explicitly mentioned)
+- If no user is mentioned, use "Usuario"
 
-The primary flow is to create a task. To do this, you need to extract information from the voice command:
-- 'projectName' (REQUIRED): The name of the project
-- 'title' (REQUIRED): The name/description of the task
-- 'userName' (REQUIRED): The user name to assign the task to
-- 'moduleName' (OPTIONAL): The module name, only if specifically mentioned
-- 'phaseName' (OPTIONAL): The phase name, only if specifically mentioned
+The tool is always "createActivity". Respond ONLY with valid JSON.
 
-If module or phase are not mentioned in the voice command, DO NOT include them in the args object.
-If no user is mentioned, you MUST ask for clarification or use a default user name like "Usuario".
-
-If the command is to create a task, the tool should be 'createActivity'. The arguments must include 'projectName', 'title', and 'userName' as required, and optionally 'moduleName' and 'phaseName' only if mentioned.
-
-If the command is to find something (like a project), the tool should be 'findProject' and the argument should be 'projectName'.
-
-Always respond with a JSON object that contains the 'tool' and 'args' fields.
-
-Examples for creating a task:
-
-Minimal example (only project, task title, and user):
-{{
-  "tool": "createActivity",
-  "args": {{
-    "projectName": "Kronos",
-    "title": "Revisar el login",
-    "userName": "Usuario"
-  }}
-}}
-
-Complete example (with module, phase, user, and estimation):
-{{
-  "tool": "createActivity",
-  "args": {{
-    "projectName": "Kronos",
-    "moduleName": "Frontend",
-    "phaseName": "Desarrollo",
-    "userName": "Ana",
-    "title": "Revisar el login",
-    "estimatedHours": 2,
-    "estimatedMinutes": 30
-  }}
-}}
-
-Example for finding a project:
-{{
-    "tool": "findProject",
-    "args": {{
-        "projectName": "TaskWise"
-    }}
-}}
+Example:
+{"tool": "createActivity","args": {"projectName":"Kronos","title":"Revisar login","userName":"Usuario"}}
 
 Voice Command: {text}
 
 {format_instructions}`);
 
-  const chain = promptTemplate.pipe(chatModel).pipe(parser);
+const chain = RunnableSequence.from([promptTemplate, chatModel, parser]);
 
-  const formatInstructions = parser.getFormatInstructions();
-
-  const result = await chain.invoke({
+export async function processVoiceCommand(
+  input: ProcessVoiceCommandInput
+): Promise<ProcessVoiceCommandOutput> {
+  return chain.invoke({
     text: input.text,
     format_instructions: formatInstructions,
   });
-
-  return result;
 }

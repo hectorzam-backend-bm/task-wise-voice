@@ -139,9 +139,6 @@ export function TaskAssistant() {
         case 'createActivity':
           resultMessage = await api.callCreateActivityAPI(structuredResponse.args as api.CreateActivityArgs, token, onProgress);
           break;
-        case 'findProject':
-          resultMessage = await api.callFindProjectAPI(structuredResponse.args as api.FindProjectArgs, token, onProgress);
-          break;
         default:
           resultMessage = "Error: La IA no pudo determinar una acción válida.";
           toast({
