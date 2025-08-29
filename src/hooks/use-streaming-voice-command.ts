@@ -60,9 +60,8 @@ export function useStreamingVoiceCommand(
 
           buffer += decoder.decode(value, { stream: true });
 
-          // Procesar líneas completas
           const lines = buffer.split("\n\n");
-          buffer = lines.pop() || ""; // Mantener la línea incompleta en el buffer
+          buffer = lines.pop() || "";
 
           for (const line of lines) {
             if (line.startsWith("data: ")) {

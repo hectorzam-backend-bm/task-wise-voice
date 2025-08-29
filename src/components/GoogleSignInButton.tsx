@@ -20,24 +20,19 @@ export default function GoogleSignInButton({
   const handleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      // Iniciar sesión con Google
+
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Obtener el token ID de Firebase
       const tokenId = await user.getIdToken();
-      console.log("Token ID obtenido de Firebase:", tokenId);
 
-      // Llamar a la API de login con el tokenId
       const loginResponse = await loginApi(tokenId);
-      console.log("Respuesta del login API:", loginResponse);
 
-      // Guardar el token en localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem("apiToken", loginResponse.data.tokens.accessToken);
       }
 
-      // Notificar éxito con el token y datos del usuario
+
       onLoginSuccess(loginResponse.data.tokens.accessToken, {
         ...user,
         apiResponse: loginResponse
@@ -49,7 +44,7 @@ export default function GoogleSignInButton({
       let errorMessage = "Error desconocido durante el inicio de sesión";
 
       if (error?.code) {
-        // Error de Firebase
+
         switch (error.code) {
           case 'auth/popup-closed-by-user':
             errorMessage = "Inicio de sesión cancelado por el usuario";
@@ -64,7 +59,7 @@ export default function GoogleSignInButton({
             errorMessage = `Error de autenticación: ${error.message}`;
         }
       } else if (error?.response) {
-        // Error de la API
+
         errorMessage = `Error del servidor: ${error.response?.data?.message || error.message}`;
       } else {
         errorMessage = error?.message || errorMessage;

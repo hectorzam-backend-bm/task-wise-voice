@@ -187,7 +187,6 @@ export const createActivity = async (
 
     onProgress?.(`✅ Módulo seleccionado: ${module.name} (ID: ${module.id})`);
 
-    // Si no se especifica fase, obtener la primera disponible
     onProgress?.(
       `🔍 ${
         args.phaseName
@@ -206,7 +205,6 @@ export const createActivity = async (
 
     onProgress?.(`✅ Fase seleccionada: ${phase.name} (ID: ${phase.id})`);
 
-    // Si se especifica usuario, buscarlo; si no, obtener el primero disponible
     onProgress?.(`🔍 Buscando usuario "${args.userName}"...`);
     const responsibleId = await getUserIdByName(
       args.userName,
@@ -221,7 +219,6 @@ export const createActivity = async (
     }
     onProgress?.(`✅ Usuario encontrado (ID: ${responsibleId})`);
 
-    // Preparar fechas para el día actual
     onProgress?.(`📅 Preparando información de la tarea...`);
     const today = new Date();
     const plannedDate = today.toISOString();
@@ -245,7 +242,6 @@ export const createActivity = async (
 
     onProgress?.(`🚀 Creando tarea en el sistema...`);
 
-    // Llamada real a la API
     const response = await axios.post<TaskApiResponse>(
       `${API_BASE_URL}/activities/activity`,
       requestBody,

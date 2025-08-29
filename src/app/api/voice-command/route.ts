@@ -1,14 +1,10 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { z } from "zod";
 
-export const maxDuration = 60;
-
-// Schema para la entrada del comando de voz
 const ProcessVoiceCommandInputSchema = z.object({
   text: z.string().describe("The transcribed text from the voice command."),
 });
 
-// Schema para los argumentos de creación de actividad
 const CreateActivityArgsSchema = z.object({
   projectName: z.string().min(1, "Project name is required"),
   title: z.string().min(1, "Task title is required"),
@@ -19,7 +15,6 @@ const CreateActivityArgsSchema = z.object({
   estimatedMinutes: z.string().optional(),
 });
 
-// Schema para la salida del procesamiento
 const ProcessVoiceCommandOutputSchema = z.object({
   tool: z.enum(["createActivity"]).describe("The tool to be called."),
   args: CreateActivityArgsSchema.describe("The arguments for the tool."),
@@ -29,10 +24,8 @@ export async function POST(req: Request) {
   try {
     const { text } = await req.json();
 
-    // Validar la entrada
     const input = ProcessVoiceCommandInputSchema.parse({ text });
 
-    // Crear el modelo de LangChain adaptado para AI SDK
     const openaiModel = new ChatOpenAI({
       openAIApiKey: process.env.OPENAI_API_KEY,
       model: "gpt-4o-mini",
@@ -59,14 +52,11 @@ Voice Command: ${input.text}
 
 Respond with valid JSON only:`;
 
-    // Usar directamente la llamada al modelo
     const response = await openaiModel.invoke(prompt);
 
     try {
-      // Parsear la respuesta JSON
       const parsedResponse = JSON.parse(response.content as string);
 
-      // Validar con el schema
       const validatedResponse =
         ProcessVoiceCommandOutputSchema.parse(parsedResponse);
 

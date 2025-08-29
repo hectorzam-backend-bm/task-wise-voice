@@ -32,7 +32,6 @@ export function TaskAssistant() {
 
   const { toast } = useToast();
 
-  // Funciones de autenticación
   const handleLoginSuccess = useCallback((accessToken: string, userData: any) => {
     setToken(accessToken);
     setUser(userData);
@@ -81,7 +80,6 @@ export function TaskAssistant() {
       return;
     }
 
-    // Evitar procesamiento duplicado con ref para prevenir race conditions
     if (isProcessing || processingRef.current) {
       console.log("Ya se está procesando un comando, ignorando...");
       return;
@@ -95,12 +93,11 @@ export function TaskAssistant() {
     setProgressValue(0);
     setHasProcessed(true);
 
-    // Callback para mostrar progreso en tiempo real
+
     const onProgress = (message: string, isError = false) => {
       setProgressMessages(prev => [...prev, message]);
       setStatusMessage(message);
 
-      // Actualizar barra de progreso basado en el tipo de mensaje
       if (message.includes("🤖 Analizando comando")) {
         setProgressValue(10);
       } else if (message.includes("📋 Campos identificados")) {
@@ -141,10 +138,9 @@ export function TaskAssistant() {
     try {
       onProgress("🤖 Analizando comando con IA...");
 
-      // Intentar usar la nueva API route primero, con fallback a LangChain tradicional
       let structuredResponse;
       try {
-        // Intentar usar el endpoint de AI SDK
+
         const apiResponse = await fetch('/api/voice-command', {
           method: 'POST',
           headers: {
@@ -163,13 +159,13 @@ export function TaskAssistant() {
         console.log("API route fallando, usando LangChain tradicional:", apiError);
         onProgress("🔄 Usando método alternativo de procesamiento...");
 
-        // Fallback al método tradicional
+    
         structuredResponse = await processVoiceCommand({ text });
       }
 
       onProgress(`🎯 Comando procesado. Creando actividad: "${structuredResponse.args.title}"`);
 
-      // Usar directamente la función de creación de actividad
+
       const resultMessage = await createActivity(structuredResponse.args, token, onProgress);
 
       setStatusMessage(resultMessage);
@@ -205,13 +201,13 @@ export function TaskAssistant() {
   });
 
   useEffect(() => {
-    // Verificar si hay un token guardado en localStorage
+
     if (typeof window !== 'undefined') {
       const storedToken = localStorage.getItem("apiToken");
       if (storedToken) {
         setToken(storedToken);
         setStatusMessage("Di un comando para empezar.");
-        // Aquí podrías hacer una llamada para obtener info del usuario si tienes un endpoint
+
         toast({
           title: "Sesión Restaurada",
           description: "Tu sesión anterior ha sido restaurada.",
@@ -280,9 +276,9 @@ export function TaskAssistant() {
   const handleMicClick = async () => {
     if (isListening) {
       stopListening();
-      // No procesar aquí, dejar que onSpeechEnd se encargue del procesamiento automático
+
     } else {
-      // Verificar permisos de micrófono antes de iniciar
+
       try {
         if (navigator.permissions) {
           const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
@@ -298,7 +294,7 @@ export function TaskAssistant() {
           }
         }
 
-        // Verificar protocolo HTTPS
+  
         if (typeof window !== 'undefined' && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
           toast({
             title: "Protocolo No Seguro",
@@ -316,7 +312,7 @@ export function TaskAssistant() {
 
       } catch (error) {
         console.error('Error al verificar permisos:', error);
-        // Continuar sin verificación de permisos si la API no está disponible
+
         setHasProcessed(false);
         setIsProcessing(false);
         processingRef.current = false;

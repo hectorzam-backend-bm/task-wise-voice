@@ -14,7 +14,7 @@ export function useVoiceProcessing(
 ) {
   const { toast } = useToast();
 
-  // Hook para streaming
+
   const streamingVoiceCommand = useStreamingVoiceCommand({
     onChunk: (chunk) => {
       options.onProgress?.(`🤖 Procesando: ${chunk}...`);
@@ -46,7 +46,7 @@ export function useVoiceProcessing(
       let structuredResponse;
 
       if (options.useStreaming) {
-        // Usar método streaming
+  
         try {
           structuredResponse = await streamingVoiceCommand.processCommand(text);
           if (!structuredResponse) {
@@ -59,11 +59,11 @@ export function useVoiceProcessing(
           );
           options.onProgress?.("🔄 Usando método alternativo...");
 
-          // Fallback al método tradicional
+    
           structuredResponse = await processVoiceCommandAI({ text });
         }
       } else {
-        // Usar método tradicional directamente
+       
         structuredResponse = await processVoiceCommandAI({ text });
       }
 
@@ -71,7 +71,7 @@ export function useVoiceProcessing(
         `🎯 Creando actividad: "${structuredResponse.args.title}"`
       );
 
-      // Crear la actividad
+
       const resultMessage = await createActivity(
         structuredResponse.args,
         token,

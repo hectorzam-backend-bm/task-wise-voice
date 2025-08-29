@@ -4,7 +4,6 @@ import { z } from "zod";
 
 export const maxDuration = 60;
 
-// Schema para la salida del procesamiento
 const ProcessVoiceCommandOutputSchema = z.object({
   tool: z.enum(["createActivity"]).describe("The tool to be called."),
   args: z
@@ -31,7 +30,6 @@ export async function POST(req: Request) {
       });
     }
 
-    // Crear el modelo de LangChain con streaming habilitado
     const model = new ChatOpenAI({
       openAIApiKey: process.env.OPENAI_API_KEY,
       model: "gpt-4o-mini",
@@ -66,10 +64,10 @@ ${formatInstructions}
 
 Respond with valid JSON only:`;
 
-    // Usar el streaming de LangChain directamente
+
     const stream = await model.stream(prompt);
 
-    // Convertir el stream de LangChain a un Response stream
+
     const encoder = new TextEncoder();
     const readableStream = new ReadableStream({
       async start(controller) {
@@ -80,7 +78,7 @@ Respond with valid JSON only:`;
             const content = chunk.content;
             fullContent += content;
 
-            // Enviar cada chunk al cliente
+
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
@@ -91,7 +89,6 @@ Respond with valid JSON only:`;
             );
           }
 
-          // Al final, intentar parsear el contenido completo
           try {
             const parsedResponse = JSON.parse(fullContent);
             const validatedResponse =

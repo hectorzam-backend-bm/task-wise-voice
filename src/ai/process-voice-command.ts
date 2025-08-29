@@ -57,7 +57,7 @@ export async function processVoiceCommand(
   });
 }
 
-// Nueva función que usa el API route (alternativa moderna)
+
 export async function processVoiceCommandViaAPI(
   input: ProcessVoiceCommandInput
 ): Promise<ProcessVoiceCommandOutput> {
@@ -80,7 +80,6 @@ export async function processVoiceCommandViaAPI(
     return ProcessVoiceCommandOutputSchema.parse(result);
   } catch (error) {
     console.error("Error calling voice command API:", error);
-    // Fallback al método tradicional de LangChain
     return processVoiceCommand(input);
   }
 }

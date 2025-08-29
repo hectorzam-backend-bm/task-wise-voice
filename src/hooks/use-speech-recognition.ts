@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// Declaraciones de tipos para Web Speech API
 declare global {
   interface Window {
     SpeechRecognition: typeof SpeechRecognition;
@@ -140,7 +139,7 @@ export const useSpeechRecognition = (
     const handleEnd = () => {
       setIsListening(false);
       if (onSpeechEnd) {
-        // Need a slight delay to ensure transcript state is updated
+  
         setTimeout(() => {
           setTranscript((currentTranscript) => {
             onSpeechEnd(currentTranscript.trim());
