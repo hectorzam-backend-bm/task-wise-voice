@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Loader2, LogOut, Mic, User } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GoogleSignInButton from './GoogleSignInButton';
 
 const initialStatusMessages = [
@@ -25,6 +25,8 @@ export function TaskAssistant() {
   const [progressMessages, setProgressMessages] = useState<string[]>([]);
   const [progressValue, setProgressValue] = useState(0);
   const [hasProcessed, setHasProcessed] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const processingRef = useRef(false);
 
   const { toast } = useToast();
 
@@ -77,6 +79,14 @@ export function TaskAssistant() {
       return;
     }
 
+    // Evitar procesamiento duplicado con ref para prevenir race conditions
+    if (isProcessing || processingRef.current) {
+      console.log("Ya se está procesando un comando, ignorando...");
+      return;
+    }
+
+    processingRef.current = true;
+    setIsProcessing(true);
     setIsLoading(true);
     setStatusMessage("Procesando comando con IA...");
     setProgressMessages([]);
@@ -170,7 +180,7 @@ export function TaskAssistant() {
         throw new Error(activityResult.error || 'Error al crear la actividad');
       }
 
-      // Mostrar todos los mensajes de progreso
+      // Mostrar todos los mensajes de progreso solo si la respuesta fue exitosa
       if (activityResult.progressMessages) {
         activityResult.progressMessages.forEach((progressMsg: { message: string; isError?: boolean }) => {
           onProgress(progressMsg.message, progressMsg.isError);
@@ -197,12 +207,14 @@ export function TaskAssistant() {
       });
     } finally {
       setIsLoading(false);
+      setIsProcessing(false);
+      processingRef.current = false;
     }
   }, [token, toast]);
 
   const { transcript, isListening, startListening, stopListening, error: speechError, recognitionSupported } = useSpeechRecognition({
     onSpeechEnd: (finalTranscript) => {
-      if (finalTranscript && !hasProcessed) {
+      if (finalTranscript && !hasProcessed && !isProcessing && !processingRef.current) {
         handleProcessVoiceCommand(finalTranscript);
       }
     }
@@ -284,9 +296,7 @@ export function TaskAssistant() {
   const handleMicClick = async () => {
     if (isListening) {
       stopListening();
-      if (transcript) {
-        handleProcessVoiceCommand(transcript);
-      }
+      // No procesar aquí, dejar que onSpeechEnd se encargue del procesamiento automático
     } else {
       // Verificar permisos de micrófono antes de iniciar
       try {
@@ -315,6 +325,8 @@ export function TaskAssistant() {
         }
 
         setHasProcessed(false);
+        setIsProcessing(false);
+        processingRef.current = false;
         startListening();
         setStatusMessage("Escuchando...");
 
@@ -322,6 +334,8 @@ export function TaskAssistant() {
         console.error('Error al verificar permisos:', error);
         // Continuar sin verificación de permisos si la API no está disponible
         setHasProcessed(false);
+        setIsProcessing(false);
+        processingRef.current = false;
         startListening();
         setStatusMessage("Escuchando...");
       }

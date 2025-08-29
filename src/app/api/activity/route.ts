@@ -82,7 +82,7 @@ const getHeaders = (token: string) => ({
 const getProjectIdByName = async (
   name: string,
   token: string
-): Promise<number | null> => {
+): Promise<Project | null> => {
   try {
     const response = await axios.get<FindProjectsApiResponse>(
       `${API_BASE_URL}/projects/`,
@@ -95,7 +95,11 @@ const getProjectIdByName = async (
       p.name.toLowerCase().includes(name.toLowerCase())
     );
 
-    return project ? project.id : null;
+    if (!project) {
+      return null;
+    }
+
+    return project;
   } catch (error) {
     console.error("Error finding project:", error);
     return null;
@@ -209,8 +213,8 @@ export async function POST(request: NextRequest) {
 
     // Buscar proyecto
     addProgress(`🔍 Buscando proyecto "${args.projectName}"...`);
-    const projectId = await getProjectIdByName(args.projectName, token);
-    if (!projectId) {
+    const project = await getProjectIdByName(args.projectName, token);
+    if (!project) {
       const errorMsg = `❌ Proyecto "${args.projectName}" no encontrado.`;
       addProgress(errorMsg, true);
       return NextResponse.json(
@@ -218,9 +222,7 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-    addProgress(
-      `✅ Proyecto encontrado: ${args.projectName} (ID: ${projectId})`
-    );
+    addProgress(`✅ Proyecto encontrado: ${args.projectName} (ID: ${project})`);
 
     // Buscar módulo
     addProgress(
@@ -230,7 +232,7 @@ export async function POST(request: NextRequest) {
           : "Obteniendo primer módulo disponible"
       }...`
     );
-    const module = await getModuleIdByName(args.moduleName, projectId, token);
+    const module = await getModuleIdByName(args.moduleName, project.id, token);
     if (!module) {
       const errorMsg = args.moduleName
         ? `❌ Módulo "${args.moduleName}" no encontrado en el proyecto.`
@@ -251,7 +253,7 @@ export async function POST(request: NextRequest) {
           : "Obteniendo primera fase disponible"
       }...`
     );
-    const phase = await getPhaseIdByName(args.phaseName, projectId, token);
+    const phase = await getPhaseIdByName(args.phaseName, project.id, token);
     if (!phase) {
       const errorMsg = args.phaseName
         ? `❌ Fase "${args.phaseName}" no encontrada en el proyecto.`
@@ -268,7 +270,7 @@ export async function POST(request: NextRequest) {
     addProgress(`🔍 Buscando usuario "${args.userName}"...`);
     const responsibleId = await getUserIdByName(
       args.userName,
-      projectId,
+      project.id,
       token
     );
     if (!responsibleId) {
@@ -287,7 +289,7 @@ export async function POST(request: NextRequest) {
     const plannedDate = today.toISOString();
 
     const requestBody: CreateTaskPayload = {
-      projectId: projectId,
+      projectId: project.id,
       statusId: 1, // Valor estático
       isIncidence: false, // Valor estático
       isDelayed: false, // Valor estático
