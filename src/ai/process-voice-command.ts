@@ -56,3 +56,31 @@ export async function processVoiceCommand(
     format_instructions: formatInstructions,
   });
 }
+
+// Nueva función que usa el API route (alternativa moderna)
+export async function processVoiceCommandViaAPI(
+  input: ProcessVoiceCommandInput
+): Promise<ProcessVoiceCommandOutput> {
+  try {
+    const response = await fetch("/api/voice-command", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text: input.text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const result = await response.json();
+    return ProcessVoiceCommandOutputSchema.parse(result);
+  } catch (error) {
+    console.error("Error calling voice command API:", error);
+    // Fallback al método tradicional de LangChain
+    return processVoiceCommand(input);
+  }
+}

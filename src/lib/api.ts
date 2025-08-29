@@ -167,9 +167,7 @@ export const createActivity = async (
       onProgress?.(errorMsg, true);
       return errorMsg;
     }
-    onProgress?.(
-      `✅ Proyecto encontrado: ${args.projectName} (ID: ${project})`
-    );
+    onProgress?.(`✅ Proyecto encontrado: ${project.name} (ID: ${project.id})`);
 
     onProgress?.(
       `🔍 ${
@@ -187,7 +185,7 @@ export const createActivity = async (
       return errorMsg;
     }
 
-    onProgress?.(`✅ Módulo seleccionado: ${module.name} (ID: ${module})`);
+    onProgress?.(`✅ Módulo seleccionado: ${module.name} (ID: ${module.id})`);
 
     // Si no se especifica fase, obtener la primera disponible
     onProgress?.(

@@ -141,8 +141,31 @@ export function TaskAssistant() {
     try {
       onProgress("🤖 Analizando comando con IA...");
 
-      // Usar directamente la función de procesamiento de voz
-      const structuredResponse = await processVoiceCommand({ text });
+      // Intentar usar la nueva API route primero, con fallback a LangChain tradicional
+      let structuredResponse;
+      try {
+        // Intentar usar el endpoint de AI SDK
+        const apiResponse = await fetch('/api/voice-command', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text }),
+        });
+
+        if (apiResponse.ok) {
+          structuredResponse = await apiResponse.json();
+          onProgress("🎯 Comando procesado con AI SDK. Validando estructura...");
+        } else {
+          throw new Error(`API response failed: ${apiResponse.status}`);
+        }
+      } catch (apiError) {
+        console.log("API route fallando, usando LangChain tradicional:", apiError);
+        onProgress("🔄 Usando método alternativo de procesamiento...");
+
+        // Fallback al método tradicional
+        structuredResponse = await processVoiceCommand({ text });
+      }
 
       onProgress(`🎯 Comando procesado. Creando actividad: "${structuredResponse.args.title}"`);
 
