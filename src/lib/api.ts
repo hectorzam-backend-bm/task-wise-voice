@@ -1,4 +1,5 @@
 import axios from "axios";
+import qs from "qs";
 import { z } from "zod";
 import { CreateActivityArgsSchema } from "./schemas";
 import { LoginApiResponse } from "./types/login";
@@ -7,7 +8,6 @@ import { Phase, PhaseApiResponse } from "./types/phases";
 import { FindProjectsApiResponse, Project } from "./types/projects";
 import { CreateTaskPayload, TaskApiResponse } from "./types/tasks";
 import { UsersApiResponse } from "./types/users";
-import { calculateSimilarity } from "./utils/calculate-similarity";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -24,13 +24,14 @@ const findProjectByName = async (
   token: string
 ): Promise<Project | null> => {
   try {
-    let response = await axios.get<FindProjectsApiResponse>(
-      `${API_BASE_URL}/projects/`,
+    ///projects?filters[name]=latino
+    const query = qs.stringify({
+      "filters[name]": name,
+    });
+    const response = await axios.get<FindProjectsApiResponse>(
+      `${API_BASE_URL}/projects?${query}`,
       {
         headers: getHeaders(token),
-        params: {
-          "filters[name]": name,
-        },
       }
     );
 
@@ -38,26 +39,11 @@ const findProjectByName = async (
       return response.data.data[0];
     }
 
-    response = await axios.get<FindProjectsApiResponse>(
-      `${API_BASE_URL}/projects/`,
-      {
-        headers: getHeaders(token),
-      }
+    const project = response.data.data.find((p) =>
+      p.name.toLowerCase().includes(name.toLowerCase())
     );
 
-    if (response.data.data.length === 0) {
-      return null;
-    }
-
-    const projectsWithScore = response.data.data.map((project) => ({
-      project,
-      score: calculateSimilarity(project.name, name),
-    }));
-
-    projectsWithScore.sort((a, b) => b.score - a.score);
-
-    const bestMatch = projectsWithScore[0];
-    return bestMatch.score > 0 ? bestMatch.project : null;
+    return project ?? null;
   } catch (error) {
     console.error("Error finding project:", error);
     return null;
