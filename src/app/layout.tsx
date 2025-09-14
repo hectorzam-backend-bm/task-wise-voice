@@ -1,3 +1,4 @@
+import { QueryProvider } from "@/components/providers/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./styles/globals.css"
 
@@ -11,14 +12,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <html lang="en" suppressHydrationWarning>
         <head />
         <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
+          <QueryProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </QueryProvider>
         </body>
       </html>
     </>

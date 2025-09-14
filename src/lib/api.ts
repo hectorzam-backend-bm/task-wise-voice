@@ -2,12 +2,12 @@ import axios from "axios";
 import qs from "qs";
 import { z } from "zod";
 import { CreateActivityArgsSchema } from "./schemas";
-import { LoginApiResponse } from "./types/login";
-import { Module, ModulesApiResponse } from "./types/modules";
-import { Phase, PhaseApiResponse } from "./types/phases";
-import { FindProjectsApiResponse, Project } from "./types/projects";
-import { CreateTaskPayload, TaskApiResponse } from "./types/tasks";
-import { UsersApiResponse } from "./types/users";
+import { LoginApiResponse } from "../services/interfaces/login";
+import { Module, ModulesApiResponse } from "../services/interfaces/modules";
+import { Phase, PhaseApiResponse } from "../services/interfaces/phases";
+import { FindProjectsApiResponse, Project } from "../services/interfaces/projects";
+import { CreateTaskPayload, TaskApiResponse } from "../services/interfaces/tasks";
+import { UsersApiResponse } from "../services/interfaces/users";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
