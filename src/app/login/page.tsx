@@ -9,10 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ModeToggle } from "@/components/ui/mode-toggle"
-import { AuthUser } from "@/lib/google-auth/interfaces/google-auth.interface"
 import { cn } from "@/lib/utils"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from 'next/navigation'
+
 
 export function Login({
   className,
@@ -20,14 +20,7 @@ export function Login({
 }: React.ComponentProps<"div">) {
   const queryClient = useQueryClient()
   const radLogin = useRADLogin()
-
-  // 🔍 CONCEPTO: useQuery para leer datos del cache
-  // Observa los datos del usuario en el cache reactivamente
-  const { data: user } = useQuery<AuthUser | null>({
-    queryKey: ["auth", "user"],
-    queryFn: () => queryClient.getQueryData<AuthUser>(["auth", "user"]) || null,
-    enabled: false, // No hace peticiones, solo lee el cache
-  })
+  const router = useRouter()
 
   const completeLogin = useMutation({
     mutationFn: async () => {
@@ -46,7 +39,7 @@ export function Login({
       queryClient.invalidateQueries({ queryKey: ["user-data"] })
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
 
-      console.log(`¡Bienvenido ${googleUser.displayName || googleUser.email}!`)
+      router.push("/voice-task-creator")
     },
     onError: (error) => {
       console.error("Error en el flujo de login:", error)
@@ -68,7 +61,6 @@ export function Login({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ModeToggle />
           <form onSubmit={handleGoogleLogin}>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">

@@ -1,6 +1,6 @@
 import { QueryProvider } from "@/components/providers/query-provider"
-import { ThemeProvider } from "@/components/theme-provider"
-import "./styles/globals.css"
+import { ThemeProvider } from "@/components/providers/theme-provider"
+import "./globals.css"
 
 interface RootLayoutProps {
   children: React.ReactNode
