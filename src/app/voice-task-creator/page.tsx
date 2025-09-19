@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "@/components/ui/select"
 import { AuthUser } from "@/lib/google-auth/interfaces/google-auth.interface"
-import { Project } from "@/services/interfaces/projects"
 import { fetchProjects } from "@/services/rad.service"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Mic } from "lucide-react"
@@ -26,10 +27,11 @@ export default function VoiceTaskCreator() {
 
   const token = queryClient.getQueryData<string>(["radToken"])
 
-  const projects = useQuery({
+  const { isPending: isLoadingProjects, isError: isErrorLoadingProjects, data: projects, error } = useQuery({
     queryKey: ["projects"],
     queryFn: () => fetchProjects(token!),
   })
+
 
 
 
@@ -39,16 +41,19 @@ export default function VoiceTaskCreator() {
       <header className="absolute top-0 left-0 right-0 p-4 sm:p-6">
         <div className="container mx-auto flex justify-between items-center">
           {/* Select de proyectos */}
-          <Select defaultValue="design">
-            <SelectTrigger className="w-[220px]">
+          <Select disabled={isLoadingProjects || isErrorLoadingProjects} >
+            <SelectTrigger className="w-72 sm:w-96">
               <SelectValue placeholder="Selecciona un proyecto" />
             </SelectTrigger>
-            <SelectContent>
-              {projects.data?.map((project: Project) => (
-                <SelectItem key={project.id} value={project.name}>
-                  {project.name}
-                </SelectItem>
-              ))}
+            <SelectContent clas>
+              <SelectGroup>
+                <SelectLabel>Proyectos</SelectLabel>
+                {projects?.map((project) => (
+                  <SelectItem key={project.id} value={project.name}>
+                    {project.client.name} - {project.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
 
@@ -63,10 +68,10 @@ export default function VoiceTaskCreator() {
             </span>
           </div>
         </div>
-      </header>
+      </header >
 
       {/* Contenido principal */}
-      <div className="flex flex-col items-center justify-center flex-1 px-4 pt-20 text-center">
+      < div className="flex flex-col items-center justify-center flex-1 px-4 pt-20 text-center" >
         <Card className="border-0 shadow-none bg-transparent">
           <CardHeader>
             <CardTitle className="text-3xl md:text-4xl font-bold text-slate-800">
@@ -95,10 +100,10 @@ export default function VoiceTaskCreator() {
             <p className="text-slate-500">Suelta para finalizar la grabación.</p>
           </CardContent>
         </Card>
-      </div>
+      </div >
 
       {/* Animación global */}
-      <style jsx global>{`
+      < style jsx global > {`
         @keyframes ping-slow {
           75%, 100% {
             transform: scale(1.5);
@@ -108,7 +113,7 @@ export default function VoiceTaskCreator() {
         .animate-ping-slow {
           animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
-      `}</style>
-    </div>
+      `}</style >
+    </div >
   )
 }

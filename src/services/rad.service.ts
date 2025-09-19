@@ -27,7 +27,9 @@ export const fetchProjects = async (accessToken: string) => {
         },
       }
     );
-    return response.data.data;
+    return response.data.data.sort((a, b) =>
+      a.client.name.localeCompare(b.client.name)
+    );
   } catch (error) {
     console.error("Error fetching projects from RAD:", error);
     throw error;
