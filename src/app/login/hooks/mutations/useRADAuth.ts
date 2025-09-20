@@ -1,9 +1,6 @@
+import { setTokens } from "@/lib/tokens";
 import { login } from "@/services/rad.service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-export const radAuthKeys = {
-  radToken: ["radToken"] as const,
-};
 
 export const useRADLogin = () => {
   const queryClient = useQueryClient();
@@ -11,10 +8,16 @@ export const useRADLogin = () => {
   return useMutation({
     mutationFn: login,
     onSuccess: (userData) => {
-      queryClient.setQueryData(
-        radAuthKeys.radToken,
-        userData.data.tokens.accessToken
-      );
+      if (userData.data?.tokens?.accessToken) {
+        setTokens({
+          accessToken: userData.data.tokens.accessToken,
+          refreshToken:
+            userData.data.tokens.refreshToken ||
+            userData.data.tokens.accessToken,
+        });
+
+        queryClient.invalidateQueries({ queryKey: ["projects"] });
+      }
     },
     onError: (error) => {
       console.error("Error en login RAD:", error);

@@ -12,40 +12,44 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
+import { useProjects } from "@/hooks/useProjects"
 import { AuthUser } from "@/lib/google-auth/interfaces/google-auth.interface"
-import { fetchProjects } from "@/services/rad.service"
+import { getAccessToken } from "@/lib/tokens"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Mic } from "lucide-react"
 
 export default function VoiceTaskCreator() {
   const queryClient = useQueryClient()
   const { data: user } = useQuery<AuthUser | null>({
-    queryKey: ["auth", "user"],
-    queryFn: () => queryClient.getQueryData<AuthUser>(["auth", "user"]) || null,
+    queryKey: ["user"],
+    queryFn: () => queryClient.getQueryData<AuthUser>(["user"]) || null,
     enabled: false,
   })
 
-  const token = queryClient.getQueryData<string>(["radToken"])
+  const { isPending: isLoadingProjects, isError: isErrorLoadingProjects, data: projects } = useProjects()
 
-  const { isPending: isLoadingProjects, isError: isErrorLoadingProjects, data: projects, error } = useQuery({
-    queryKey: ["projects"],
-    queryFn: () => fetchProjects(token!),
-  })
-
-
-
-
+  const accessToken = getAccessToken()
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 p-4 sm:p-6">
         <div className="container mx-auto flex justify-between items-center">
           {/* Select de proyectos */}
-          <Select disabled={isLoadingProjects || isErrorLoadingProjects} >
+          <Select disabled={isLoadingProjects || isErrorLoadingProjects || !accessToken} >
             <SelectTrigger className="w-72 sm:w-96">
-              <SelectValue placeholder="Selecciona un proyecto" />
+              <SelectValue
+                placeholder={
+                  !accessToken
+                    ? "Inicia sesión para ver proyectos"
+                    : isLoadingProjects
+                      ? "Cargando proyectos..."
+                      : isErrorLoadingProjects
+                        ? "Error al cargar proyectos"
+                        : "Selecciona un proyecto"
+                }
+              />
             </SelectTrigger>
-            <SelectContent clas>
+            <SelectContent>
               <SelectGroup>
                 <SelectLabel>Proyectos</SelectLabel>
                 {projects?.map((project) => (

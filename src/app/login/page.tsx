@@ -26,18 +26,15 @@ export function Login({
     mutationFn: async () => {
       const { signInWithGoogle } = await import("@/lib/google-auth/google-auth")
       const googleUser = await signInWithGoogle()
-      const radResponse = await radLogin.mutateAsync(googleUser.tokenId)
 
-      return { googleUser, radResponse }
+      await radLogin.mutateAsync(googleUser.tokenId)
+
+      return { googleUser }
     },
-    onSuccess: ({ googleUser, radResponse }) => {
-      // 🎯 CONCEPTO: setQueryData actualiza el cache inmediatamente
-      queryClient.setQueryData(["auth", "user"], googleUser)
-      queryClient.setQueryData(["radToken"], radResponse.data.tokens.accessToken)
+    onSuccess: ({ googleUser }) => {
+      queryClient.setQueryData([ "user"], googleUser)
 
-      // 🔄 CONCEPTO: invalidateQueries refresca datos relacionados
       queryClient.invalidateQueries({ queryKey: ["user-data"] })
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
 
       router.push("/voice-task-creator")
     },

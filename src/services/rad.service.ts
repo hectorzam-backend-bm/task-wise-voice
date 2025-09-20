@@ -1,12 +1,11 @@
-import axios from "axios";
+import { axiosAuth, axiosPublic } from "../lib/axios";
 import { LoginApiResponse } from "./interfaces/login";
 import { FindProjectsApiResponse } from "./interfaces/projects";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const login = async (tokenId: string): Promise<LoginApiResponse> => {
   try {
-    const response = await axios.post<LoginApiResponse>(
-      `${API_BASE_URL}/auth/login`,
+    const response = await axiosPublic.post<LoginApiResponse>(
+      "/auth/login",
       { tokenId },
       { headers: { "Content-Type": "application/json" } }
     );
@@ -17,21 +16,15 @@ export const login = async (tokenId: string): Promise<LoginApiResponse> => {
   }
 };
 
-export const fetchProjects = async (accessToken: string) => {
+export const fetchProjects = async () => {
   try {
-    const response = await axios.get<FindProjectsApiResponse>(
-      `${API_BASE_URL}/projects`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    const response = await axiosAuth.get<FindProjectsApiResponse>("/projects");
     return response.data.data.sort((a, b) =>
       a.client.name.localeCompare(b.client.name)
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching projects from RAD:", error);
+
     throw error;
   }
 };

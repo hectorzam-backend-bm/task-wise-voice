@@ -10,9 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { ModeToggle } from "@/components/ui/mode-toggle"
-import { AuthUser } from "@/lib/google-auth/interfaces/google-auth.interface"
 import { cn } from "@/lib/utils"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 export function Login({
   className,
@@ -20,14 +19,6 @@ export function Login({
 }: React.ComponentProps<"div">) {
   const queryClient = useQueryClient()
   const radLogin = useRADLogin()
-
-  // 🔍 CONCEPTO: useQuery para leer datos del cache
-  // Observa los datos del usuario en el cache reactivamente
-  const { data: user } = useQuery<AuthUser | null>({
-    queryKey: ["auth", "user"],
-    queryFn: () => queryClient.getQueryData<AuthUser>(["auth", "user"]) || null,
-    enabled: false, // No hace peticiones, solo lee el cache
-  })
 
   const completeLogin = useMutation({
     mutationFn: async () => {
@@ -37,14 +28,9 @@ export function Login({
 
       return { googleUser, radResponse }
     },
-    onSuccess: ({ googleUser, radResponse }) => {
-      // 🎯 CONCEPTO: setQueryData actualiza el cache inmediatamente
-      queryClient.setQueryData(["auth", "user"], googleUser)
-      queryClient.setQueryData(["radToken"], radResponse.data.tokens.accessToken)
+    onSuccess: ({ googleUser }) => {
 
-      // 🔄 CONCEPTO: invalidateQueries refresca datos relacionados
-      queryClient.invalidateQueries({ queryKey: ["user-data"] })
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.setQueryData(["user"], googleUser)
 
       console.log(`¡Bienvenido ${googleUser.displayName || googleUser.email}!`)
     },
