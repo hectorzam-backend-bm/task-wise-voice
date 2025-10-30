@@ -17,6 +17,7 @@ import { AuthUser } from "@/lib/google-auth/interfaces/google-auth.interface"
 import { getAccessToken } from "@/lib/tokens"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Mic } from "lucide-react"
+import { motion } from "motion/react"
 
 export default function VoiceTaskCreator() {
   const queryClient = useQueryClient()
@@ -49,7 +50,7 @@ export default function VoiceTaskCreator() {
                 }
               />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectGroup>
                 <SelectLabel>Proyectos</SelectLabel>
                 {projects?.map((project) => (
@@ -88,36 +89,44 @@ export default function VoiceTaskCreator() {
 
           <CardContent className="flex flex-col items-center gap-6">
             {/* Botón central */}
-            <div className="relative">
+            <motion.div
+              className="relative"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{
+                type: "decay",
+                stiffness: 400,
+                damping: 17
+              }}
+            >
+              <motion.div
+                animate={{
+                  boxShadow: [
+                    "0 0 0 0 rgba(59, 130, 246, 0.7)",
+                    "0 0 0 10px rgba(59, 130, 246, 0)",
+                    "0 0 0 20px rgba(59, 130, 246, 0)"
+                  ],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="absolute inset-0 rounded-full"
+              />
               <Button
                 size="icon"
-                className="rounded-full w-40 h-40 md:w-48 md:h-48 shadow-lg transition-transform duration-200 ease-in-out bg-primary hover:scale-105 active:scale-95"
+                className="rounded-full w-40 h-40 md:w-48 md:h-48 shadow-lg transition-transform duration-200 ease-in-out bg-primary hover:scale-105 active:scale-95 relative z-10"
                 aria-label="Start recording"
               >
                 <Mic className="w-16 h-16" />
               </Button>
-
-              {/* Ping animado */}
-              <div className="absolute inset-0 rounded-full border-4 border-primary opacity-0 animate-ping-slow"></div>
-            </div>
+            </motion.div>
 
             <p className="text-slate-500">Suelta para finalizar la grabación.</p>
           </CardContent>
         </Card>
       </div >
-
-      {/* Animación global */}
-      < style jsx global > {`
-        @keyframes ping-slow {
-          75%, 100% {
-            transform: scale(1.5);
-            opacity: 0;
-          }
-        }
-        .animate-ping-slow {
-          animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-      `}</style >
     </div >
   )
 }

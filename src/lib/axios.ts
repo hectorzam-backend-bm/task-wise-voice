@@ -12,10 +12,8 @@ const axiosAuth = Axios.create({
 const authRequestInterceptor = (config: InternalAxiosRequestConfig) => {
   if (config.headers) {
     const token = getAccessToken();
-    console.log("Auth interceptor - Token:", token ? "Present" : "Missing");
     if (token) {
       config.headers["authorization"] = `Bearer ${token}`;
-      console.log("Auth interceptor - Authorization header set");
     } else {
       console.warn("Auth interceptor - No token found in localStorage");
     }
